@@ -12,7 +12,7 @@ import { Footer } from "@/components/shared/Footer";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-black overflow-hidden">
+    <main className="min-h-screen bg-black overflow-x-hidden">
       <Navbar />
       <Hero />
       <InteractiveEcosystem />
