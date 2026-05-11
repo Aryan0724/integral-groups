@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Terminal, Lock, AlertCircle } from "lucide-react";
 
-export default function AdminLogin() {
+// Inner component that uses useSearchParams — must be wrapped in Suspense
+function AdminLoginInner() {
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "error" | "success">("idle");
   const [bootComplete, setBootComplete] = useState(false);
@@ -31,6 +32,7 @@ export default function AdminLogin() {
         }
       }, i * 250);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,15 +57,20 @@ export default function AdminLogin() {
       } else {
         setStatus("error");
         setBootLines((prev) => [...prev, "AUTH_DENIED: INVALID_CREDENTIALS"]);
-        setTimeout(() => setStatus("idle"), 2000);
+        setTimeout(() => {
+          setStatus("idle");
+          setPassword("");
+        }, 2000);
       }
     } catch {
       setStatus("error");
+      setBootLines((prev) => [...prev, "ERROR: NETWORK_FAILURE"]);
+      setTimeout(() => setStatus("idle"), 2000);
     }
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center font-mono relative overflow-hidden">
+    <div className="min-h-screen bg-black flex items-center justify-center font-mono relative overflow-hidden px-4">
       {/* Background Grid */}
       <div className="absolute inset-0 bg-grid-small opacity-5" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(6,182,212,0.05)_0%,_transparent_70%)]" />
@@ -80,7 +87,7 @@ export default function AdminLogin() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md relative z-10"
       >
-        {/* Header */}
+        {/* Terminal Window */}
         <div className="border border-white/10 bg-[#0a0a0a] overflow-hidden">
           <div className="border-b border-white/10 px-6 py-3 flex items-center justify-between bg-black">
             <div className="flex items-center space-x-2">
@@ -107,7 +114,7 @@ export default function AdminLogin() {
                 className={
                   line.includes("GRANTED") || line.includes("INITIALIZING")
                     ? "text-green-500"
-                    : line.includes("DENIED")
+                    : line.includes("DENIED") || line.includes("ERROR")
                     ? "text-red-500"
                     : line.includes("AWAITING")
                     ? "text-cyan-500"
@@ -145,6 +152,7 @@ export default function AdminLogin() {
                     placeholder="ENTER_ACCESS_KEY"
                     className="flex-1 bg-transparent border-none outline-none text-white text-xs uppercase tracking-widest placeholder:text-white/20 caret-cyan-500"
                     autoFocus
+                    autoComplete="current-password"
                     disabled={status === "loading" || status === "success"}
                   />
                   {status === "loading" && (
@@ -155,15 +163,13 @@ export default function AdminLogin() {
                   )}
                 </div>
 
-                <motion.button
+                <button
                   type="submit"
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
                   disabled={status === "loading" || status === "success"}
-                  className="w-full py-3 border border-white/10 text-[10px] uppercase tracking-[0.3em] text-white/60 hover:text-white hover:border-cyan-500/50 transition-all duration-300 disabled:opacity-30"
+                  className="w-full py-3 border border-white/10 text-[10px] uppercase tracking-[0.3em] text-white/60 hover:text-white hover:border-cyan-500/50 transition-all duration-300 disabled:opacity-30 active:scale-[0.99]"
                 >
                   {status === "loading" ? "AUTHENTICATING..." : status === "success" ? "ACCESS_GRANTED" : "INITIATE_SESSION"}
-                </motion.button>
+                </button>
               </form>
 
               <div className="mt-6 text-[8px] text-white/20 uppercase tracking-widest text-center">
@@ -179,5 +185,23 @@ export default function AdminLogin() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+// Loading fallback for Suspense
+function LoginFallback() {
+  return (
+    <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="w-2 h-2 bg-cyan-500 rounded-full animate-ping" />
+    </div>
+  );
+}
+
+// Page component wraps inner in Suspense (required for useSearchParams)
+export default function AdminLogin() {
+  return (
+    <Suspense fallback={<LoginFallback />}>
+      <AdminLoginInner />
+    </Suspense>
   );
 }

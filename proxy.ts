@@ -5,11 +5,17 @@ const ADMIN_SECRET = process.env.ADMIN_SECRET || "integral_admin_2024";
 const AUTH_COOKIE = "integral_admin_auth";
 
 /**
- * Next.js 16 Proxy Convention
- * This replaces the deprecated middleware.ts
+ * Next.js 16 Proxy (replaces middleware.ts)
+ * Protects all /admin routes, redirecting unauthenticated users to /admin/login.
+ * The /admin/login page and all /api/* routes are explicitly excluded.
  */
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Allow API routes through — never block them
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.next();
+  }
 
   // Protect all /admin routes except /admin/login
   if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
@@ -26,5 +32,6 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
+  // Match /admin and /admin/* but explicitly NOT /api/* (handled above for safety)
   matcher: ["/admin", "/admin/:path*"],
 };
