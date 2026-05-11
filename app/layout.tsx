@@ -3,6 +3,7 @@ import { Inter, Space_Grotesk } from "next/font/google";
 import { AmbientBackground } from "@/components/shared/AmbientBackground";
 import { CommandUI } from "@/components/shared/CommandUI";
 import { SystemOverlay } from "@/components/shared/SystemOverlay";
+import { CustomCursor } from "@/components/shared/CustomCursor";
 import "./globals.css";
 
 
@@ -29,11 +30,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} dark`} suppressHydrationWarning>
       <body className="bg-black text-white selection:bg-cyan-500/30 font-sans antialiased" suppressHydrationWarning>
+        <CustomCursor />
         <AmbientBackground />
         <CommandUI />
         <SystemOverlay />
         {children}
-
       </body>
     </html>
   );

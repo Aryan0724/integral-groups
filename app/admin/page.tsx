@@ -125,19 +125,19 @@ const DashboardPage = () => {
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.4 }}
-          className="lg:col-span-2 relative h-[450px] border border-white/5 bg-black/40 overflow-hidden group p-8"
+          className="lg:col-span-2 relative min-h-[350px] lg:h-[450px] border border-white/5 bg-black/40 overflow-hidden group p-4 lg:p-8"
         >
           <div className="absolute top-0 left-0 w-full h-full bg-grid opacity-[0.05]" />
           
           <div className="relative z-10 flex flex-col h-full">
-            <div className="flex items-center justify-between mb-10">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-10">
               <div className="flex items-center space-x-3">
                 <Globe size={16} className="text-cyan-500" />
-                <h2 className="text-[11px] uppercase tracking-[0.3em] font-bold">Ecosystem_Architecture</h2>
+                <h2 className="text-[10px] lg:text-[11px] uppercase tracking-[0.3em] font-bold">Ecosystem_Architecture</h2>
               </div>
               <div className="flex items-center space-x-4">
-                <span className="text-[9px] uppercase tracking-widest text-white/20">Visualizer_Active</span>
-                <div className="w-24 h-1 bg-white/5 rounded-full overflow-hidden">
+                <span className="text-[9px] uppercase tracking-widest text-white/20 hidden sm:inline">Visualizer_Active</span>
+                <div className="w-20 lg:w-24 h-1 bg-white/5 rounded-full overflow-hidden">
                   <motion.div 
                     animate={{ x: ["-100%", "100%"] }}
                     transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
@@ -147,45 +147,48 @@ const DashboardPage = () => {
               </div>
             </div>
 
-            {/* Visualizer Mockup */}
-            <div className="flex-1 flex items-center justify-center relative">
-              <div className="absolute w-[300px] h-[300px] border border-white/5 rounded-full animate-pulse opacity-20" />
-              <div className="absolute w-[200px] h-[200px] border border-cyan-500/10 rounded-full animate-spin-slow" />
+            {/* Visualizer Mockup - Scale for Mobile */}
+            <div className="flex-1 flex items-center justify-center relative scale-75 sm:scale-100">
+              <div className="absolute w-[250px] h-[250px] lg:w-[300px] lg:h-[300px] border border-white/5 rounded-full animate-pulse opacity-20" />
+              <div className="absolute w-[180px] h-[180px] lg:w-[200px] lg:h-[200px] border border-cyan-500/10 rounded-full animate-spin-slow" />
               
               <div className="relative flex flex-col items-center">
-                <div className="w-16 h-16 bg-white border border-white/10 flex items-center justify-center mb-4 shadow-[0_0_40px_rgba(255,255,255,0.1)]">
-                  <span className="text-black font-bold text-2xl">∫</span>
+                <div className="w-12 h-12 lg:w-16 lg:h-16 bg-white border border-white/10 flex items-center justify-center mb-4 shadow-[0_0_40px_rgba(255,255,255,0.1)]">
+                  <span className="text-black font-bold text-xl lg:text-2xl">∫</span>
                 </div>
-                <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-white/60">Integral_Core</span>
+                <span className="text-[9px] lg:text-[10px] uppercase tracking-[0.4em] font-bold text-white/60">Integral_Core</span>
               </div>
 
               {/* Connected Nodes Mockup */}
               {[
-                { name: 'Labs', angle: 0, color: 'text-cyan-500' },
-                { name: 'Media', angle: 120, color: 'text-purple-500' },
-                { name: 'Inno', angle: 240, color: 'text-green-500' },
-              ].map((node, i) => (
-                <motion.div 
-                  key={i}
-                  animate={{ 
-                    x: [Math.cos(node.angle * Math.PI / 180) * 120, Math.cos(node.angle * Math.PI / 180) * 130, Math.cos(node.angle * Math.PI / 180) * 120],
-                    y: [Math.sin(node.angle * Math.PI / 180) * 120, Math.sin(node.angle * Math.PI / 180) * 130, Math.sin(node.angle * Math.PI / 180) * 120]
-                  }}
-                  transition={{ duration: 4, delay: i, repeat: Infinity }}
-                  className="absolute flex flex-col items-center"
-                >
-                  <div className={cn("w-10 h-10 border border-white/10 bg-black/80 flex items-center justify-center mb-2", node.color)}>
-                    <Layers size={14} />
-                  </div>
-                  <span className="text-[8px] uppercase tracking-widest text-white/40">{node.name}</span>
-                </motion.div>
-              ))}
+                { name: 'Labs', angle: 0, color: 'text-cyan-500', distance: 100 },
+                { name: 'Media', angle: 120, color: 'text-purple-500', distance: 100 },
+                { name: 'Inno', angle: 240, color: 'text-green-500', distance: 100 },
+              ].map((node, i) => {
+                const dist = typeof window !== 'undefined' && window.innerWidth < 640 ? 80 : 120;
+                return (
+                  <motion.div 
+                    key={i}
+                    animate={{ 
+                      x: [Math.cos(node.angle * Math.PI / 180) * dist, Math.cos(node.angle * Math.PI / 180) * (dist + 10), Math.cos(node.angle * Math.PI / 180) * dist],
+                      y: [Math.sin(node.angle * Math.PI / 180) * dist, Math.sin(node.angle * Math.PI / 180) * (dist + 10), Math.sin(node.angle * Math.PI / 180) * dist]
+                    }}
+                    transition={{ duration: 4, delay: i, repeat: Infinity }}
+                    className="absolute flex flex-col items-center"
+                  >
+                    <div className={cn("w-8 h-8 lg:w-10 lg:h-10 border border-white/10 bg-black/80 flex items-center justify-center mb-2", node.color)}>
+                      <Layers size={14} />
+                    </div>
+                    <span className="text-[7px] lg:text-[8px] uppercase tracking-widest text-white/40">{node.name}</span>
+                  </motion.div>
+                );
+              })}
             </div>
 
-            <div className="mt-auto flex justify-between items-end border-t border-white/5 pt-6">
-              <div className="space-y-1">
+            <div className="mt-auto flex flex-col sm:flex-row justify-between items-center sm:items-end border-t border-white/5 pt-6 gap-4">
+              <div className="space-y-1 text-center sm:text-left">
                 <div className="text-[8px] uppercase tracking-widest text-white/20">Active_Linkages</div>
-                <div className="text-[12px] font-mono text-cyan-500">32_STABLE_CHANNELS</div>
+                <div className="text-[11px] lg:text-[12px] font-mono text-cyan-500">32_STABLE_CHANNELS</div>
               </div>
               <button className="text-[9px] uppercase tracking-widest text-white/40 hover:text-white transition-colors border-b border-white/10 pb-1">
                 Manage_Architecture →
