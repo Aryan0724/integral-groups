@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 const ADMIN_SECRET = process.env.ADMIN_SECRET || "integral_admin_2024";
 const AUTH_COOKIE = "integral_admin_auth";
 
-export function proxy(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Protect all /admin routes except /admin/login
