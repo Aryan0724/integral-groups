@@ -8,11 +8,11 @@ const AUTH_COOKIE = "integral_admin_auth";
  * Next.js 16 Proxy Convention
  * This replaces the deprecated middleware.ts
  */
-export default function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Protect all /admin routes except /admin/login
-  if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
+  if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
     const authCookie = request.cookies.get(AUTH_COOKIE);
 
     if (!authCookie || authCookie.value !== ADMIN_SECRET) {
@@ -26,5 +26,5 @@ export default function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin", "/admin/:path*"],
 };
