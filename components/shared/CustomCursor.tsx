@@ -6,6 +6,7 @@ import { motion, useSpring, useMotionValue } from "framer-motion";
 export const CustomCursor = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
   
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
@@ -15,6 +16,9 @@ export const CustomCursor = () => {
   const smoothY = useSpring(cursorY, springConfig);
 
   useEffect(() => {
+    // Detect touch device to avoid hydration mismatch
+    setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+
     const moveCursor = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
@@ -28,7 +32,7 @@ export const CustomCursor = () => {
         target.tagName === 'A' || 
         target.closest('button') || 
         target.closest('a') ||
-        window.getComputedStyle(target).cursor === 'pointer';
+        (typeof window !== 'undefined' && window.getComputedStyle(target).cursor === 'pointer');
       
       setIsHovering(!!isClickable);
     };
@@ -43,7 +47,7 @@ export const CustomCursor = () => {
   }, [cursorX, cursorY, isVisible]);
 
   // Don't render on mobile/touch devices
-  if (typeof window !== "undefined" && ('ontouchstart' in window || navigator.maxTouchPoints > 0)) {
+  if (isTouchDevice) {
     return null;
   }
 

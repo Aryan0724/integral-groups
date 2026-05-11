@@ -36,6 +36,35 @@ const activity = [
   { id: 4, type: 'MEDIA', title: "Transmission: Vision 2026 Upload", status: 'Syncing', time: '5h ago', user: 'Admin_Root' },
 ];
 
+const ConnectedNode = ({ node, i }: { node: any, i: number }) => {
+  const [dist, setDist] = React.useState(120);
+  
+  React.useEffect(() => {
+    const handleResize = () => {
+      setDist(window.innerWidth < 640 ? 80 : 120);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return (
+    <motion.div 
+      animate={{ 
+        x: [Math.cos(node.angle * Math.PI / 180) * dist, Math.cos(node.angle * Math.PI / 180) * (dist + 10), Math.cos(node.angle * Math.PI / 180) * dist],
+        y: [Math.sin(node.angle * Math.PI / 180) * dist, Math.sin(node.angle * Math.PI / 180) * (dist + 10), Math.sin(node.angle * Math.PI / 180) * dist]
+      }}
+      transition={{ duration: 4, delay: i, repeat: Infinity }}
+      className="absolute flex flex-col items-center"
+    >
+      <div className={cn("w-8 h-8 lg:w-10 lg:h-10 border border-white/10 bg-black/80 flex items-center justify-center mb-2", node.color)}>
+        <Layers size={14} />
+      </div>
+      <span className="text-[7px] lg:text-[8px] uppercase tracking-widest text-white/40">{node.name}</span>
+    </motion.div>
+  );
+};
+
 const DashboardPage = () => {
   return (
     <div className="space-y-10">
@@ -161,28 +190,12 @@ const DashboardPage = () => {
 
               {/* Connected Nodes Mockup */}
               {[
-                { name: 'Labs', angle: 0, color: 'text-cyan-500', distance: 100 },
-                { name: 'Media', angle: 120, color: 'text-purple-500', distance: 100 },
-                { name: 'Inno', angle: 240, color: 'text-green-500', distance: 100 },
-              ].map((node, i) => {
-                const dist = typeof window !== 'undefined' && window.innerWidth < 640 ? 80 : 120;
-                return (
-                  <motion.div 
-                    key={i}
-                    animate={{ 
-                      x: [Math.cos(node.angle * Math.PI / 180) * dist, Math.cos(node.angle * Math.PI / 180) * (dist + 10), Math.cos(node.angle * Math.PI / 180) * dist],
-                      y: [Math.sin(node.angle * Math.PI / 180) * dist, Math.sin(node.angle * Math.PI / 180) * (dist + 10), Math.sin(node.angle * Math.PI / 180) * dist]
-                    }}
-                    transition={{ duration: 4, delay: i, repeat: Infinity }}
-                    className="absolute flex flex-col items-center"
-                  >
-                    <div className={cn("w-8 h-8 lg:w-10 lg:h-10 border border-white/10 bg-black/80 flex items-center justify-center mb-2", node.color)}>
-                      <Layers size={14} />
-                    </div>
-                    <span className="text-[7px] lg:text-[8px] uppercase tracking-widest text-white/40">{node.name}</span>
-                  </motion.div>
-                );
-              })}
+                { name: 'Labs', angle: 0, color: 'text-cyan-500' },
+                { name: 'Media', angle: 120, color: 'text-purple-500' },
+                { name: 'Inno', angle: 240, color: 'text-green-500' },
+              ].map((node, i) => (
+                <ConnectedNode key={i} node={node} i={i} />
+              ))}
             </div>
 
             <div className="mt-auto flex flex-col sm:flex-row justify-between items-center sm:items-end border-t border-white/5 pt-6 gap-4">
