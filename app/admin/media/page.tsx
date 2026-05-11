@@ -107,7 +107,7 @@ const MediaAdmin = () => {
                     {asset.type === 'video' ? <PlayCircle size={14} className="text-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]" /> : <ImageIcon size={14} className="text-white/20" />}
                   </div>
                   <div className="flex items-center justify-between text-[8px] uppercase tracking-widest text-white/20">
-                    <span>{asset.dimensions} // {asset.size}</span>
+                    <span>{asset.dimensions}{" // "}{asset.size}</span>
                     <span>{asset.date}</span>
                   </div>
                 </div>
