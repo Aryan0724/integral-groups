@@ -1,36 +1,38 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 
 export const AmbientBackground = () => {
+  const [mounted, setMounted] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 });
   const [isMobile, setIsMobile] = useState(false);
   const { scrollYProgress } = useScroll();
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
+  const checkMobile = useCallback(() => {
+    setIsMobile(window.innerWidth < 768 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0);
+  }, []);
 
-    const handleMouseMove = (e: MouseEvent) => {
-      if (window.innerWidth >= 768) {
-        setMousePos({
-          x: e.clientX / window.innerWidth,
-          y: e.clientY / window.innerHeight,
-        });
-      }
-    };
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (window.innerWidth >= 768) {
+      setMousePos({
+        x: e.clientX / window.innerWidth,
+        y: e.clientY / window.innerHeight,
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    setMounted(true);
+    checkMobile();
+    window.addEventListener('resize', checkMobile, { passive: true });
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
     
-    window.addEventListener("mousemove", handleMouseMove);
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener('resize', checkMobile);
     };
-  }, []);
+  }, [checkMobile, handleMouseMove]);
 
   // Smoother springs for premium feel
   const springConfig = { damping: 50, stiffness: 80, mass: 1.5 };
@@ -50,6 +52,8 @@ export const AmbientBackground = () => {
     "M 0 500 L 1600 500"
   ], []);
 
+  if (!mounted) return <div className="fixed inset-0 z-[-1] bg-black" />;
+
   return (
     <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden bg-black">
       {/* 1. BASE DEPTH */}
@@ -59,7 +63,7 @@ export const AmbientBackground = () => {
       <motion.div 
         style={{ 
           x: gridX, 
-          y: gridYScroll,
+          y: isMobile ? 0 : gridYScroll,
           opacity: 0.08
         }}
         className="absolute inset-[-25%] bg-grid-small"
@@ -94,7 +98,7 @@ export const AmbientBackground = () => {
         </motion.div>
       )}
 
-      {/* 4. SIGNAL FLOW NETWORK */}
+      {/* 4. SIGNAL FLOW NETWORK - Static on mobile */}
       <svg className="absolute inset-0 w-full h-full opacity-[0.1]">
         <defs>
           <linearGradient id="flowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -107,25 +111,29 @@ export const AmbientBackground = () => {
         {paths.map((d, i) => (
           <React.Fragment key={i}>
             <path d={d} stroke="white" strokeWidth="0.5" fill="none" opacity="0.05" />
-            <motion.path 
-              d={d} 
-              stroke="url(#flowGrad)" 
-              strokeWidth="1.5" 
-              fill="none"
-              animate={{ strokeDashoffset: [2000, 0] }}
-              transition={{ duration: 15 + i * 5, repeat: Infinity, ease: "linear" }}
-              strokeDasharray="100, 900"
-            />
+            {!isMobile && (
+              <motion.path 
+                d={d} 
+                stroke="url(#flowGrad)" 
+                strokeWidth="1.5" 
+                fill="none"
+                animate={{ strokeDashoffset: [2000, 0] }}
+                transition={{ duration: 15 + i * 5, repeat: Infinity, ease: "linear" }}
+                strokeDasharray="100, 900"
+              />
+            )}
           </React.Fragment>
         ))}
       </svg>
 
-      {/* 5. VOLUMETRIC SCAN SWEEP */}
-      <motion.div 
-        animate={{ top: ["-20%", "120%"] }}
-        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        className="absolute left-0 right-0 h-[300px] bg-gradient-to-b from-transparent via-cyan-500/[0.02] to-transparent"
-      />
+      {/* 5. VOLUMETRIC SCAN SWEEP - Disabled on mobile */}
+      {!isMobile && (
+        <motion.div 
+          animate={{ top: ["-20%", "120%"] }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute left-0 right-0 h-[300px] bg-gradient-to-b from-transparent via-cyan-500/[0.02] to-transparent"
+        />
+      )}
 
       {/* 6. CURSOR SIGNAL GLOW - Hidden on Mobile */}
       {!isMobile && (
@@ -138,12 +146,14 @@ export const AmbientBackground = () => {
         />
       )}
 
-      {/* 7. SYSTEM SCANLINE */}
-      <motion.div 
-        animate={{ left: ["-100%", "200%"] }}
-        transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-        className="absolute top-0 bottom-0 w-[1px] bg-cyan-500/5 shadow-[0_0_40px_rgba(6,182,212,0.05)]"
-      />
+      {/* 7. SYSTEM SCANLINE - Simplified on mobile */}
+      {!isMobile && (
+        <motion.div 
+          animate={{ left: ["-100%", "200%"] }}
+          transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+          className="absolute top-0 bottom-0 w-[1px] bg-cyan-500/5 shadow-[0_0_40px_rgba(6,182,212,0.05)]"
+        />
+      )}
 
       {/* 8. NOISE OVERLAY - Disabled on mobile for performance */}
       {!isMobile && (

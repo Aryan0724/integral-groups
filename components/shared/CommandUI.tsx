@@ -33,7 +33,10 @@ export const CommandUI = () => {
     "SYSTEM_ONLINE: WAITING FOR COMMAND..."
   ];
 
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
+    setMounted(true);
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
@@ -59,6 +62,8 @@ export const CommandUI = () => {
       setTimeout(() => inputRef.current?.focus(), bootLines.length * 200 + 100);
     }
   }, [isOpen]);
+
+  if (!mounted) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

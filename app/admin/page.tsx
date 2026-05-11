@@ -37,16 +37,20 @@ const activity = [
 ];
 
 const ConnectedNode = ({ node, i }: { node: any, i: number }) => {
+  const [mounted, setMounted] = React.useState(false);
   const [dist, setDist] = React.useState(120);
   
   React.useEffect(() => {
+    setMounted(true);
     const handleResize = () => {
       setDist(window.innerWidth < 640 ? 80 : 120);
     };
     handleResize();
-    window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', handleResize, { passive: true });
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  if (!mounted) return null;
 
   return (
     <motion.div 
@@ -54,7 +58,12 @@ const ConnectedNode = ({ node, i }: { node: any, i: number }) => {
         x: [Math.cos(node.angle * Math.PI / 180) * dist, Math.cos(node.angle * Math.PI / 180) * (dist + 10), Math.cos(node.angle * Math.PI / 180) * dist],
         y: [Math.sin(node.angle * Math.PI / 180) * dist, Math.sin(node.angle * Math.PI / 180) * (dist + 10), Math.sin(node.angle * Math.PI / 180) * dist]
       }}
-      transition={{ duration: 4, delay: i, repeat: Infinity }}
+      transition={{ 
+        duration: 4, 
+        delay: i, 
+        repeat: Infinity,
+        ease: "linear" 
+      }}
       className="absolute flex flex-col items-center"
     >
       <div className={cn("w-8 h-8 lg:w-10 lg:h-10 border border-white/10 bg-black/80 flex items-center justify-center mb-2", node.color)}>

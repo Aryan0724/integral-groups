@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { motion, useSpring, useMotionValue } from "framer-motion";
 
 export const CustomCursor = () => {
+  const [mounted, setMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
@@ -15,39 +16,44 @@ export const CustomCursor = () => {
   const smoothX = useSpring(cursorX, springConfig);
   const smoothY = useSpring(cursorY, springConfig);
 
+  const moveCursor = useCallback((e: MouseEvent) => {
+    cursorX.set(e.clientX);
+    cursorY.set(e.clientY);
+    if (!isVisible) setIsVisible(true);
+  }, [cursorX, cursorY, isVisible]);
+
+  const handleMouseOver = useCallback((e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (!target) return;
+    
+    const isClickable = 
+      target.tagName === 'BUTTON' || 
+      target.tagName === 'A' || 
+      target.closest('button') || 
+      target.closest('a') ||
+      (typeof window !== 'undefined' && window.getComputedStyle(target).cursor === 'pointer');
+    
+    setIsHovering(!!isClickable);
+  }, []);
+
   useEffect(() => {
-    // Detect touch device to avoid hydration mismatch
-    setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    setMounted(true);
+    const touchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    setIsTouchDevice(touchDevice);
 
-    const moveCursor = (e: MouseEvent) => {
-      cursorX.set(e.clientX);
-      cursorY.set(e.clientY);
-      if (!isVisible) setIsVisible(true);
-    };
+    if (touchDevice) return;
 
-    const handleMouseOver = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const isClickable = 
-        target.tagName === 'BUTTON' || 
-        target.tagName === 'A' || 
-        target.closest('button') || 
-        target.closest('a') ||
-        (typeof window !== 'undefined' && window.getComputedStyle(target).cursor === 'pointer');
-      
-      setIsHovering(!!isClickable);
-    };
-
-    window.addEventListener("mousemove", moveCursor);
-    window.addEventListener("mouseover", handleMouseOver);
+    window.addEventListener("mousemove", moveCursor, { passive: true });
+    window.addEventListener("mouseover", handleMouseOver, { passive: true });
     
     return () => {
       window.removeEventListener("mousemove", moveCursor);
       window.removeEventListener("mouseover", handleMouseOver);
     };
-  }, [cursorX, cursorY, isVisible]);
+  }, [moveCursor, handleMouseOver]);
 
-  // Don't render on mobile/touch devices
-  if (isTouchDevice) {
+  // Don't render on server, mobile/touch devices, or until mounted
+  if (!mounted || isTouchDevice) {
     return null;
   }
 

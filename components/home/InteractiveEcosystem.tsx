@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Logo } from "../shared/Logo";
@@ -64,8 +64,22 @@ const nodes = [
 ];
 
 export const InteractiveEcosystem = () => {
+  const [mounted, setMounted] = useState(false);
   const [activeNode, setActiveNode] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile, { passive: true });
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  if (!mounted) return <section className="min-h-screen bg-black" />;
 
   return (
     <section 
@@ -100,11 +114,17 @@ export const InteractiveEcosystem = () => {
         </div>
 
         {/* Main Container for the Map */}
-        <div className="relative w-full xl:w-1/2 aspect-square">
+        <div className="relative w-full xl:w-1/2 aspect-square max-w-[600px]">
         
-        {/* Orbital Rings */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] md:w-[50%] md:h-[80%] border border-white/5 rounded-[100%] animate-[spin_60s_linear_infinite]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] md:w-[70%] md:h-[110%] border border-white/5 border-dashed rounded-[100%] animate-[spin_90s_linear_infinite_reverse]" />
+        {/* Orbital Rings - Simplified for Mobile */}
+        <div className={cn(
+          "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] md:w-[50%] md:h-[80%] border border-white/5 rounded-[100%]",
+          !isMobile && "animate-[spin_60s_linear_infinite]"
+        )} />
+        <div className={cn(
+          "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] md:w-[70%] md:h-[110%] border border-white/5 border-dashed rounded-[100%]",
+          !isMobile && "animate-[spin_90s_linear_infinite_reverse]"
+        )} />
 
         {/* Connection Lines to Central Node */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
@@ -127,7 +147,7 @@ export const InteractiveEcosystem = () => {
                   strokeDasharray: isHovered || isFuture ? "5, 5" : "0, 0"
                 }}
                 transition={{ duration: 0.5 }}
-                className={cn("transition-colors duration-500", isHovered && "animate-[dash_20s_linear_infinite]")}
+                className={cn("transition-colors duration-500", !isMobile && isHovered && "animate-[dash_20s_linear_infinite]")}
               />
             );
           })}
@@ -136,8 +156,9 @@ export const InteractiveEcosystem = () => {
         {/* Central Node: INTEGRAL GROUP */}
         <motion.div 
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 flex flex-col items-center justify-center cursor-crosshair"
-          onMouseEnter={() => setActiveNode("core")}
-          onMouseLeave={() => setActiveNode(null)}
+          onMouseEnter={() => !isMobile && setActiveNode("core")}
+          onMouseLeave={() => !isMobile && setActiveNode(null)}
+          onClick={() => isMobile && setActiveNode(activeNode === "core" ? null : "core")}
           animate={{
             scale: activeNode === "core" ? 1.1 : 1,
             opacity: activeNode && activeNode !== "core" ? 0.5 : 1
@@ -145,12 +166,12 @@ export const InteractiveEcosystem = () => {
           transition={{ duration: 0.4 }}
         >
           <div className={cn(
-            "w-32 h-32 md:w-48 md:h-48 rounded-full border bg-black/80 backdrop-blur-md flex flex-col items-center justify-center transition-all duration-700 relative",
+            "w-24 h-24 md:w-48 md:h-48 rounded-full border bg-black/80 backdrop-blur-md flex flex-col items-center justify-center transition-all duration-700 relative",
             activeNode === "core" ? "border-cyan-500 shadow-[0_0_50px_rgba(6,182,212,0.3)]" : "border-white/20 hover:border-white/50"
           )}>
             <div className="absolute inset-2 border border-white/5 rounded-full" />
-            <div className="w-3 h-3 bg-white rounded-full mb-4 shadow-[0_0_15px_rgba(255,255,255,0.8)]" />
-            <span className="text-display font-bold text-xs md:text-sm tracking-[0.3em] uppercase text-center text-white/90">
+            <div className="w-2 h-2 md:w-3 md:h-3 bg-white rounded-full mb-2 md:mb-4 shadow-[0_0_15px_rgba(255,255,255,0.8)]" />
+            <span className="text-display font-bold text-[8px] md:text-sm tracking-[0.3em] uppercase text-center text-white/90">
               Integral <br /> Group
             </span>
           </div>
@@ -167,8 +188,9 @@ export const InteractiveEcosystem = () => {
               key={node.id}
               className="absolute z-20 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center"
               style={{ left: `${node.x}%`, top: `${node.y}%` }}
-              onMouseEnter={() => setActiveNode(node.id)}
-              onMouseLeave={() => setActiveNode(null)}
+              onMouseEnter={() => !isMobile && setActiveNode(node.id)}
+              onMouseLeave={() => !isMobile && setActiveNode(null)}
+              onClick={() => isMobile && setActiveNode(activeNode === node.id ? null : node.id)}
               animate={{
                 scale: isHovered ? 1.2 : 1,
                 opacity: isDimmed ? 0.3 : isFuture ? 0.4 : 1
@@ -177,12 +199,12 @@ export const InteractiveEcosystem = () => {
             >
               <div className="relative group cursor-crosshair">
                 <div className={cn(
-                  "w-16 h-16 md:w-20 md:h-20 rounded-full border bg-black/90 backdrop-blur-sm flex items-center justify-center transition-all duration-500 z-10 relative",
+                  "w-12 h-12 md:w-20 md:h-20 rounded-full border bg-black/90 backdrop-blur-sm flex items-center justify-center transition-all duration-500 z-10 relative",
                   isHovered ? "border-cyan-500 shadow-[0_0_30px_rgba(6,182,212,0.4)]" : 
                   isFuture ? "border-white/5 border-dashed" : "border-white/10"
                 )}>
                   <div className={cn(
-                    "w-2 h-2 rounded-full transition-all duration-500",
+                    "w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-all duration-500",
                     isHovered ? "bg-cyan-500 scale-150" : 
                     isFuture ? "bg-white/10" : "bg-white/30"
                   )} />
@@ -190,17 +212,17 @@ export const InteractiveEcosystem = () => {
                 
                 {/* Node Label */}
                 <div className={cn(
-                  "absolute top-full left-1/2 -translate-x-1/2 mt-4 text-[10px] md:text-xs uppercase tracking-widest whitespace-nowrap transition-all duration-500 flex flex-col items-center",
+                  "absolute top-full left-1/2 -translate-x-1/2 mt-4 text-[8px] md:text-xs uppercase tracking-widest whitespace-nowrap transition-all duration-500 flex flex-col items-center",
                   isHovered ? "text-cyan-500" : "text-white/50"
                 )}>
                   <div className="flex flex-col items-center">
                     <span>{node.label}</span>
                     {isFuture && (
-                      <span className="text-[7px] text-white/20 tracking-[0.2em] mt-1">[ FUTURE EXPANSION ]</span>
+                      <span className="text-[6px] md:text-[7px] text-white/20 tracking-[0.2em] mt-1">[ FUTURE EXPANSION ]</span>
                     )}
                   </div>
                   
-                  {/* Expanded Description on Hover */}
+                  {/* Expanded Description on Hover/Click */}
                   <AnimatePresence>
                     {isHovered && (
                       <motion.div 
@@ -208,7 +230,7 @@ export const InteractiveEcosystem = () => {
                         animate={{ opacity: 1, y: 0, height: "auto" }}
                         exit={{ opacity: 0, y: -10, height: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="mt-2 text-[9px] text-white/60 text-center max-w-[150px] normal-case tracking-normal leading-relaxed"
+                        className="mt-2 text-[7px] md:text-[9px] text-white/60 text-center max-w-[120px] md:max-w-[150px] normal-case tracking-normal leading-relaxed"
                       >
                         {node.desc}
                       </motion.div>
