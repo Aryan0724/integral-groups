@@ -4,7 +4,11 @@ import type { NextRequest } from "next/server";
 const ADMIN_SECRET = process.env.ADMIN_SECRET || "integral_admin_2024";
 const AUTH_COOKIE = "integral_admin_auth";
 
-export default function proxy(request: NextRequest) {
+/**
+ * Next.js 16 Proxy Convention
+ * This replaces the deprecated middleware.ts
+ */
+export default function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Protect all /admin routes except /admin/login
