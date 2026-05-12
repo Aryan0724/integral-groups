@@ -63,7 +63,7 @@ export default function AboutManager() {
 
     const { error: contentError } = await supabase
       .from('site_content')
-      .upsert(updates, { onConflict: 'key' });
+      .upsert(updates as any, { onConflict: 'key' });
 
     if (contentError) {
       setStatus({ type: 'error', message: "Failed to save content." });

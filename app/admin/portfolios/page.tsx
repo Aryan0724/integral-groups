@@ -52,12 +52,12 @@ export default function PortfolioManager() {
     if (itemToSave.id) {
       ({ error } = await supabase
         .from('portfolios')
-        .update(itemToSave)
+        .update(itemToSave as any)
         .eq('id', itemToSave.id));
     } else {
       ({ error } = await supabase
         .from('portfolios')
-        .insert([itemToSave]));
+        .insert([itemToSave] as any));
     }
 
     if (!error) {

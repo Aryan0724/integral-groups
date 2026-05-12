@@ -126,7 +126,7 @@ export default function HomepageManager() {
 
     const { error } = await supabase
       .from('site_content')
-      .upsert(updates, { onConflict: 'key' });
+      .upsert(updates as any, { onConflict: 'key' });
 
     if (error) {
       setStatus({ type: 'error', message: "Failed to save changes. Check console." });

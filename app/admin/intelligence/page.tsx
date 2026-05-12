@@ -54,12 +54,12 @@ export default function IntelligenceManager() {
     if (articleToSave.id) {
       ({ error } = await supabase
         .from('articles')
-        .update(articleToSave)
+        .update(articleToSave as any)
         .eq('id', articleToSave.id));
     } else {
       ({ error } = await supabase
         .from('articles')
-        .insert([articleToSave]));
+        .insert([articleToSave] as any));
     }
 
     if (!error) {
