@@ -105,7 +105,7 @@ export default function HomepageManager() {
     } else {
       const contentMap: Record<string, string> = {};
       const descMap: Record<string, string> = {};
-      data.forEach(item => {
+      (data as any[]).forEach(item => {
         contentMap[item.key] = item.value;
         descMap[item.key] = item.description || "";
       });

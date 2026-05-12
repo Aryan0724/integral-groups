@@ -40,7 +40,7 @@ export default function AboutManager() {
 
     if (!contentRes.error && contentRes.data) {
       const contentMap: Record<string, string> = {};
-      contentRes.data.forEach(item => {
+      (contentRes.data as any[]).forEach(item => {
         contentMap[item.key] = item.value;
       });
       setContent(contentMap);
