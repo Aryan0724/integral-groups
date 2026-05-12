@@ -30,7 +30,7 @@ export default function SettingsManager() {
 
     if (data) {
       const map = { ...content };
-      data.forEach(item => {
+      (data as any[]).forEach(item => {
         map[item.key] = item.value;
       });
       setContent(map);
@@ -41,7 +41,7 @@ export default function SettingsManager() {
   async function handleSave() {
     setSaving(true);
     const updates = Object.entries(content).map(([key, value]) => ({ key, value }));
-    const { error } = await supabase.from('site_content').upsert(updates, { onConflict: 'key' });
+    const { error } = await supabase.from('site_content').upsert(updates as any, { onConflict: 'key' });
     if (!error) setTimeout(() => setSaving(false), 500);
     else { alert(error.message); setSaving(false); }
   }

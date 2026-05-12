@@ -52,7 +52,7 @@ export default function JoinUsManager() {
         description: content.description,
         perks: content.perks,
         open_roles: content.roles
-      });
+      } as any);
 
     if (error) {
       setStatus({ type: 'error', message: "Failed to save." });

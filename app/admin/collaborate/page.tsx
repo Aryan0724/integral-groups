@@ -28,7 +28,7 @@ export default function CollaborateManager() {
 
     if (!error && data) {
       const map: Record<string, string> = { ...content };
-      data.forEach(item => {
+      (data as any[]).forEach(item => {
         map[item.key] = item.value;
       });
       setContent(map);
@@ -39,7 +39,7 @@ export default function CollaborateManager() {
   async function handleSave() {
     setSaving(true);
     const updates = Object.entries(content).map(([key, value]) => ({ key, value }));
-    const { error } = await supabase.from('site_content').upsert(updates, { onConflict: 'key' });
+    const { error } = await supabase.from('site_content').upsert(updates as any, { onConflict: 'key' });
     
     if (!error) {
       setTimeout(() => setSaving(false), 500);
