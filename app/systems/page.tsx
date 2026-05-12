@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Footer } from "@/components/shared/Footer";
 import { Activity, Server, ArrowRight, BarChart3, Terminal } from "lucide-react";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 const systems = [
   {
