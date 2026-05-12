@@ -1,9 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
-import { AmbientBackground } from "@/components/shared/AmbientBackground";
-import { CommandUI } from "@/components/shared/CommandUI";
-import { SystemOverlay } from "@/components/shared/SystemOverlay";
-import { CustomCursor } from "@/components/shared/CustomCursor";
+import { Inter, Space_Grotesk, IBM_Plex_Mono, Geist } from "next/font/google";
+import { SmoothScroll } from "@/components/shared/SmoothScroll";
 import "./globals.css";
 
 const inter = Inter({
@@ -18,12 +15,29 @@ const spaceGrotesk = Space_Grotesk({
   display: "swap",
 });
 
+const ibmPlexMono = IBM_Plex_Mono({
+  weight: ["400", "500", "600"],
+  subsets: ["latin"],
+  variable: "--font-ibm-plex-mono",
+  display: "swap",
+});
+
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "Integral Group | Engineering Multi-Sector Execution",
-  description: "A modular multi-sector ecosystem operating across technology, AI, robotics, infrastructure, and defense-oriented innovation.",
-  appleWebApp: {
-    title: "Integral Group",
-    statusBarStyle: "black-translucent",
+  title: "Integral Group | Engineering Intelligent Systems",
+  description: "Integral Group builds AI-driven infrastructure, intelligent automation systems, digital ecosystems, and future-ready technology platforms.",
+  keywords: ["AI automation", "intelligent infrastructure", "systems engineering", "robotics", "future technology"],
+  authors: [{ name: "Integral Group" }],
+  openGraph: {
+    title: "Integral Group | Engineering Intelligent Systems",
+    description: "The Operating Interface of Integral Group.",
+    type: "website",
+    locale: "en_US",
   },
 };
 
@@ -32,8 +46,10 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#000000",
+  themeColor: "#0a0a0a",
 };
+
+import { Navigation } from "@/components/shared/Navigation";
 
 export default function RootLayout({
   children,
@@ -41,14 +57,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} dark`} suppressHydrationWarning>
-      <body className="bg-black text-white selection:bg-cyan-500/30 font-sans antialiased overflow-x-hidden" suppressHydrationWarning>
-        <CustomCursor />
-        <AmbientBackground />
-        <CommandUI />
-        <SystemOverlay />
-        {children}
+    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable} ${geist.variable}`} suppressHydrationWarning>
+      <body className="bg-white text-black font-sans antialiased selection:bg-primary/30" suppressHydrationWarning>
+        <div className="scanline-overlay opacity-5" />
+        <Navigation />
+        <SmoothScroll>
+          <main className="relative z-0">
+            {children}
+          </main>
+        </SmoothScroll>
       </body>
     </html>
+
+
   );
 }
+
+

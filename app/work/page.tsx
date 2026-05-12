@@ -1,98 +1,100 @@
 "use client";
 
-import React from "react";
-import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { motion } from "framer-motion";
-import { ExternalLink, Layers, Cpu, Globe, Zap } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 
 const projects = [
   {
-    title: "Autonomous Logistics Node",
-    category: "Infrastructure",
-    desc: "A modular fulfillment system for rapid-deployment supply chains.",
-    icon: Cpu,
-    tags: ["Robotics", "AI", "Execution"],
+    id: "/0.1",
+    tag: "AIP",
+    title: "AI-Powered Automation for Every Decision",
+    description: "Integral Artificial Intelligence Platform (AIP) enables modular ecosystem building with scalable execution architecture.",
+    image: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=2000",
   },
   {
-    title: "Global Intelligence Engine",
-    category: "Research",
-    desc: "Real-time market sentiment and geopolitical risk analysis platform.",
-    icon: Globe,
-    tags: ["Data", "Analysis", "Insight"],
+    id: "/0.2",
+    tag: "GOTHAM",
+    title: "Achieve AI-driven combat superiority, from space to mud",
+    description: "Strategic media systems and digital infrastructure for global operational dominance.",
+    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2000",
   },
   {
-    title: "Modular Branding OS",
-    category: "Creative",
-    desc: "Dynamic identity systems that evolve with organizational growth.",
-    icon: Zap,
-    tags: ["Brand", "Visual", "Systems"],
-  }
+    id: "/0.3",
+    tag: "FOUNDRY",
+    title: "The operating system for the modern enterprise",
+    description: "Innovation platforms and digital infrastructure for scalable industrial intelligence.",
+    image: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=2000",
+  },
+  {
+    id: "/0.4",
+    tag: "APOLLO",
+    title: "The power of autonomous deployment",
+    description: "Cloud-native infrastructure for the next industrial era.",
+    image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=2000",
+  },
 ];
 
 export default function WorkPage() {
   return (
-    <main className="min-h-screen bg-black overflow-hidden flex flex-col">
-      <Navbar />
+    <div className="bg-white text-black min-h-screen">
       
-      <section className="flex-1 pt-40 pb-32 relative">
-        <div className="absolute inset-0 bg-grid opacity-5 pointer-events-none" />
-        
-        <div className="container mx-auto px-6 relative z-10">
-          <div className="max-w-5xl mb-24">
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex items-center space-x-4 mb-12"
-            >
-              <div className="w-12 h-[1px] bg-cyan-500" />
-              <span className="text-cyan-500 text-[10px] uppercase tracking-[0.4em] font-mono">EXECUTION_LOG</span>
-            </motion.div>
-            
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-display text-5xl md:text-8xl font-bold tracking-tighter uppercase text-white leading-[0.85] mb-12"
-            >
-              Proven<br />
-              <span className="text-white/40">Capabilities</span>
-            </motion.h1>
+      <main className="pt-32 pb-24">
+        <div className="container mx-auto px-6">
+          <div className="max-w-4xl mb-32">
+            <h1 className="text-[12rem] font-display font-bold leading-none tracking-tighter mb-8">
+              Work
+            </h1>
+            <p className="text-2xl text-black/60 leading-relaxed">
+              Engineering the operating interface for the next industrial era.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="space-y-1">
             {projects.map((project, i) => (
               <motion.div
-                key={project.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className="group p-8 border border-white/10 bg-white/[0.02] hover:bg-white/[0.05] transition-all duration-500 relative"
+                key={project.tag}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true }}
+                className="py-24 border-b border-black/5 last:border-b-0 group"
               >
-                <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
-                  <ExternalLink size={16} />
-                </div>
-                
-                <div className="mb-12">
-                  <project.icon size={32} className="text-cyan-500 mb-6" />
-                  <div className="text-[10px] uppercase tracking-widest text-white/40 mb-2">{project.category}</div>
-                  <h3 className="text-2xl font-bold tracking-tight uppercase text-white mb-4">{project.title}</h3>
-                  <p className="text-white/40 text-sm font-light leading-relaxed">{project.desc}</p>
-                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                  <div className="lg:col-span-3">
+                    <h3 className="text-xl font-medium leading-tight mb-8">
+                      {project.title}
+                    </h3>
+                    <span className="text-sm font-mono text-black/30">{project.id}</span>
+                  </div>
+                  
+                  <div className="lg:col-span-4">
+                    <div className="aspect-video overflow-hidden">
+                      <img 
+                        src={project.image} 
+                        alt={project.tag}
+                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+                      />
+                    </div>
+                  </div>
 
-                <div className="flex flex-wrap gap-2">
-                  {project.tags.map(tag => (
-                    <span key={tag} className="px-3 py-1 border border-white/10 text-[9px] font-mono uppercase tracking-widest text-white/20 group-hover:text-cyan-500/60 transition-colors">
-                      {tag}
-                    </span>
-                  ))}
+                  <div className="lg:col-span-5 flex flex-col lg:items-end">
+                    <h4 className="text-[10rem] font-display font-bold leading-none tracking-tighter">
+                      {project.tag}
+                    </h4>
+                    <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                      See Platform <ArrowUpRight className="w-5 h-5" />
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             ))}
           </div>
         </div>
-      </section>
+      </main>
 
       <Footer />
-    </main>
+    </div>
   );
 }
