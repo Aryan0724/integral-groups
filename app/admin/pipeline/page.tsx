@@ -1,209 +1,173 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  UserCheck, 
-  Search, 
-  Filter, 
-  ChevronDown, 
-  ChevronRight, 
-  Mail, 
-  Clock, 
-  Tag, 
-  CheckCircle2, 
-  XCircle,
-  AlertCircle,
-  MoreVertical,
-  Cpu,
-  Layers,
-  Zap
+  Search, Trash2, Mail, User, Clock, 
+  CheckCircle2, AlertCircle, RefreshCw, Filter, ChevronRight
 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 
-const tracks = [
-  { id: 'eng', name: 'Engineering', icon: Cpu, color: 'text-cyan-500' },
-  { id: 'creative', name: 'Creative', icon: Zap, color: 'text-purple-500' },
-  { id: 'strategy', name: 'Strategy', icon: Layers, color: 'text-green-500' },
-  { id: 'research', name: 'Research', icon: Search, color: 'text-blue-500' },
-];
+interface Contact {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  status: string;
+  created_at: string;
+}
 
-const applicants = [
-  { id: 'APP-001', name: 'Merton, Alex', track: 'Engineering', status: 'In Review', date: '2h ago', level: 'Senior', ref: 'INT-4A2' },
-  { id: 'APP-002', name: 'Sharma, Priya', track: 'Research', status: 'Received', date: '5h ago', level: 'Lead', ref: 'INT-9B1' },
-  { id: 'APP-003', name: 'Kim, Darius', track: 'Creative', status: 'Approved', date: '1d ago', level: 'Principal', ref: 'INT-1C4' },
-  { id: 'APP-004', name: 'Laurent, Mia', track: 'Strategy', status: 'Declined', date: '2d ago', level: 'Director', ref: 'INT-2D8' },
-];
+export default function PipelineManager() {
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-const PipelineAdmin = () => {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  useEffect(() => {
+    fetchContacts();
+  }, []);
+
+  async function fetchContacts() {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('contacts')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      setContacts(data);
+    }
+    setLoading(false);
+  }
+
+  async function updateStatus(id: string, status: string) {
+    const { error } = await supabase
+      .from('contacts')
+      .update({ status })
+      .eq('id', id);
+    
+    if (!error) fetchContacts();
+  }
+
+  async function deleteContact(id: string) {
+    if (confirm("Purge this dossier from the pipeline?")) {
+      await supabase.from('contacts').delete().eq('id', id);
+      fetchContacts();
+      setSelectedId(null);
+    }
+  }
+
+  const selectedContact = contacts.find(c => c.id === selectedId);
 
   return (
-    <div className="space-y-10">
-      
-      {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div className="space-y-8 pb-20">
+      <div className="flex items-center justify-between">
         <div>
-          <div className="flex items-center space-x-2 text-[10px] uppercase tracking-[0.4em] text-cyan-500/60 mb-4">
-            <UserCheck size={12} />
-            <span>Infrastructure_Pipeline // Talent_Logistics</span>
+          <div className="flex items-center space-x-2 text-[10px] uppercase tracking-[0.4em] text-cyan-500/60 mb-2">
+            <RefreshCw size={11} className={loading ? "animate-spin" : ""} />
+            <span>Operational_Command // Pipeline</span>
           </div>
-          <h1 className="text-4xl font-bold tracking-tight uppercase">Application Management</h1>
+          <h1 className="text-3xl font-bold uppercase tracking-tight text-white">Transmission Pipeline</h1>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        <div className="flex items-center space-x-4">
-          <div className="flex flex-col items-end">
-            <span className="text-[10px] text-white/20 uppercase tracking-widest font-mono">Pipeline_Status</span>
-            <span className="text-[10px] text-cyan-500/80 uppercase tracking-widest font-mono">142_Records_Active</span>
-          </div>
-          <button className="px-6 py-2.5 bg-white/[0.03] border border-white/10 text-white/60 text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-white hover:text-black transition-all">
-            Export_Archive
-          </button>
-        </div>
-      </div>
-
-      {/* TRACK OVERVIEW GRID */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {tracks.map((track, i) => (
-          <motion.div 
-            key={track.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-            className="p-6 bg-black/40 border border-white/5 hover:border-white/10 transition-all group cursor-pointer"
-          >
-            <div className="flex justify-between items-start mb-4">
-              <div className={cn("p-2 bg-white/[0.02] rounded-lg", track.color)}>
-                <track.icon size={16} />
-              </div>
-              <span className="text-[10px] font-mono text-white/10 group-hover:text-cyan-500/40 transition-colors">0{i+1}</span>
-            </div>
-            <div className="text-2xl font-light tracking-tight mb-1">34</div>
-            <div className="text-[9px] uppercase tracking-widest text-white/30">{track.name} Track</div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* PIPELINE LOG */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between px-6 pb-2 border-b border-white/5 text-[9px] uppercase tracking-widest text-white/20">
-          <div className="flex items-center space-x-24">
-            <span className="w-24">Reference_ID</span>
-            <span className="w-64">Applicant_Entity</span>
-            <span>Discipline_Track</span>
-          </div>
-          <div className="flex items-center space-x-20">
-            <span>Operational_Status</span>
-            <span className="w-16">Timestamp</span>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          {applicants.map((app, i) => (
-            <div key={app.id} className="group flex flex-col">
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 + i * 0.05 }}
-                onClick={() => setExpandedId(expandedId === app.id ? null : app.id)}
+        {/* List */}
+        <div className="lg:col-span-2 space-y-4">
+          {loading ? (
+            Array(5).fill(0).map((_, i) => <div key={i} className="h-20 bg-white/[0.02] border border-white/5 animate-pulse" />)
+          ) : contacts.length > 0 ? (
+            contacts.map((contact) => (
+              <div 
+                key={contact.id} 
+                onClick={() => setSelectedId(contact.id)}
                 className={cn(
-                  "flex items-center justify-between px-6 py-5 bg-black/40 border border-white/5 hover:bg-white/[0.02] hover:border-white/10 cursor-pointer transition-all duration-300",
-                  expandedId === app.id ? "bg-white/[0.03] border-cyan-500/20" : ""
+                  "p-6 border transition-all cursor-pointer flex items-center justify-between group",
+                  selectedId === contact.id ? "bg-white/[0.05] border-cyan-500/40" : "bg-black/40 border-white/5 hover:bg-white/[0.02]"
                 )}
               >
-                <div className="flex items-center space-x-24">
-                  <div className="w-24 flex items-center space-x-3">
-                    <div className={cn("w-1 h-1 rounded-full", 
-                      app.status === 'Approved' ? "bg-green-500" : 
-                      app.status === 'Declined' ? "bg-red-500" : 
-                      "bg-cyan-500 animate-pulse"
-                    )} />
-                    <span className="text-[11px] font-mono text-white/40">{app.id}</span>
-                  </div>
-                  <div className="w-64 flex flex-col">
-                    <span className="text-sm font-bold tracking-tight uppercase group-hover:text-cyan-500 transition-colors">{app.name}</span>
-                    <span className="text-[9px] text-white/20 uppercase tracking-widest">{app.level} Role</span>
-                  </div>
-                  <div className={cn("px-3 py-1 border border-white/5 bg-white/[0.02] text-[9px] uppercase tracking-[0.2em]", 
-                    tracks.find(t => t.name === app.track)?.color || "text-white/40"
+                <div className="flex items-center space-x-6">
+                  <div className={cn(
+                    "w-10 h-10 flex items-center justify-center border",
+                    contact.status === 'NEW' ? "border-cyan-500/20 text-cyan-500" : "border-white/10 text-white/20"
                   )}>
-                    {app.track}
+                    <Mail size={16} />
+                  </div>
+                  <div>
+                    <div className="flex items-center space-x-3 mb-1">
+                      <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest">{new Date(contact.created_at).toLocaleDateString()}</span>
+                      <span className={cn(
+                        "text-[8px] font-mono px-2 py-0.5 rounded-full border uppercase tracking-widest",
+                        contact.status === 'NEW' ? "border-cyan-500/50 text-cyan-500 bg-cyan-500/5" : "border-white/10 text-white/30"
+                      )}>{contact.status}</span>
+                    </div>
+                    <h3 className="text-sm font-bold uppercase tracking-tight text-white/80">{contact.name}</h3>
+                  </div>
+                </div>
+                <ChevronRight size={16} className={cn("text-white/10 group-hover:text-cyan-500 transition-colors", selectedId === contact.id && "text-cyan-500")} />
+              </div>
+            ))
+          ) : (
+            <div className="py-20 text-center border border-dashed border-white/10">
+               <AlertCircle className="mx-auto mb-4 text-white/10" size={32} />
+               <div className="text-[10px] uppercase tracking-[0.3em] text-white/20">No transmissions in the pipeline.</div>
+            </div>
+          )}
+        </div>
+
+        {/* Detail Panel */}
+        <div className="space-y-6">
+          <div className="border border-white/5 bg-black/40 p-8 flex flex-col min-h-[500px]">
+            {selectedContact ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8 flex-1 flex flex-col">
+                <div className="space-y-6 pb-6 border-b border-white/5">
+                  <div className="flex items-center justify-between">
+                    <div className="w-12 h-12 bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                      <User size={24} className="text-cyan-500" />
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => updateStatus(selectedContact.id, 'ARCHIVED')} title="Archive" className="p-2 border border-white/10 hover:border-white/30 transition-all text-white/20 hover:text-white"><CheckCircle2 size={16} /></button>
+                      <button onClick={() => deleteContact(selectedContact.id)} title="Delete" className="p-2 border border-white/10 hover:border-red-500/30 transition-all text-white/20 hover:text-red-500"><Trash2 size={16} /></button>
+                    </div>
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold uppercase tracking-tight text-white mb-1">{selectedContact.name}</h2>
+                    <div className="text-[11px] font-mono text-cyan-500/60 uppercase tracking-widest">{selectedContact.email}</div>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-20">
-                  <div className="flex items-center space-x-2">
-                    <span className={cn("text-[10px] uppercase tracking-widest font-bold", 
-                      app.status === 'Approved' ? "text-green-500" : 
-                      app.status === 'Declined' ? "text-red-500/60" : 
-                      "text-cyan-500/80"
-                    )}>{app.status}</span>
+                <div className="flex-1 space-y-6 py-6 overflow-y-auto">
+                  <div className="space-y-2">
+                    <label className="text-[9px] uppercase tracking-widest text-white/20 font-mono">Transmission_Subject</label>
+                    <div className="text-xs text-white/80 uppercase tracking-widest">{selectedContact.subject || "NO_SUBJECT"}</div>
                   </div>
-                  <div className="w-16 text-right">
-                    <span className="text-[10px] text-white/20 font-mono uppercase">{app.date}</span>
+                  <div className="space-y-2">
+                    <label className="text-[9px] uppercase tracking-widest text-white/20 font-mono">Operational_Data</label>
+                    <div className="text-sm text-white/60 leading-relaxed font-light">{selectedContact.message}</div>
                   </div>
+                </div>
+
+                <div className="pt-6 border-t border-white/5">
+                  <a 
+                    href={`mailto:${selectedContact.email}`}
+                    className="w-full py-4 bg-white text-black text-[10px] uppercase tracking-[0.4em] font-bold hover:bg-cyan-500 transition-all flex items-center justify-center gap-3"
+                  >
+                    <Mail size={14} />
+                    Initialize_Response
+                  </a>
                 </div>
               </motion.div>
-
-              {/* EXPANDED CONTENT */}
-              <AnimatePresence>
-                {expandedId === app.id && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden bg-white/[0.01] border-x border-white/5"
-                  >
-                    <div className="p-10 border-b border-white/5 grid grid-cols-1 lg:grid-cols-3 gap-12">
-                      <div className="lg:col-span-2 space-y-6">
-                        <div className="space-y-3">
-                          <span className="text-[9px] uppercase tracking-widest text-white/20">Operational_Manifesto</span>
-                          <p className="text-sm text-white/60 leading-relaxed max-w-2xl font-light italic">
-                            "Systems architect with 6 years in distributed infrastructure. Interested in contributing to the modular execution layer at Integral Labs. Focused on autonomous coordination systems and high-throughput data pipes."
-                          </p>
-                        </div>
-                        <div className="flex items-center space-x-8 pt-4">
-                          <div className="flex flex-col">
-                            <span className="text-[8px] uppercase tracking-widest text-white/20 mb-1">Contact_Entity</span>
-                            <span className="text-xs text-white/80 font-mono">alex.merton@sys_node.ext</span>
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-[8px] uppercase tracking-widest text-white/20 mb-1">System_Ref</span>
-                            <span className="text-xs text-white/80 font-mono">#{app.ref}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-6">
-                        <div className="space-y-4">
-                          <span className="text-[9px] uppercase tracking-widest text-white/20">Review_Protocols</span>
-                          <div className="space-y-2">
-                            <button className="w-full py-3 bg-white text-black text-[9px] uppercase tracking-[0.3em] font-bold hover:bg-cyan-500 transition-colors flex items-center justify-center space-x-2">
-                              <CheckCircle2 size={12} />
-                              <span>Authorize_Dossier</span>
-                            </button>
-                            <button className="w-full py-3 bg-white/[0.03] border border-white/10 text-white/60 text-[9px] uppercase tracking-[0.3em] hover:bg-white/[0.05] transition-colors flex items-center justify-center space-x-2">
-                              <AlertCircle size={12} />
-                              <span>Request_Diagnostic</span>
-                            </button>
-                            <button className="w-full py-3 text-red-500/40 hover:text-red-500 text-[9px] uppercase tracking-[0.3em] transition-colors flex items-center justify-center space-x-2">
-                              <XCircle size={12} />
-                              <span>Terminate_Process</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          ))}
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6">
+                <Mail size={48} className="text-white/5" />
+                <div className="text-[10px] uppercase tracking-[0.3em] text-white/20">Select a dossier to inspect</div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-
     </div>
   );
-};
-
-export default PipelineAdmin;
+}

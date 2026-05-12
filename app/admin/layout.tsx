@@ -27,19 +27,22 @@ import {
   Globe,
   Menu,
   X,
+  UserPlus,
+  Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const sidebarItems = [
   { id: "dashboard", name: "Dashboard", icon: LayoutDashboard, path: "/admin" },
-  { id: "ecosystem", name: "Ecosystem", icon: Database, path: "/admin/ecosystem" },
-  { id: "departments", name: "Departments", icon: Layers, path: "/admin/departments" },
   { id: "homepage", name: "Homepage", icon: Home, path: "/admin/homepage" },
+  { id: "about", name: "About Section", icon: Info, path: "/admin/about" },
+  { id: "portfolios", name: "Portfolios", icon: Layers, path: "/admin/portfolios" },
+  { id: "departments", name: "Departments", icon: Database, path: "/admin/departments" },
   { id: "intelligence", name: "Intelligence", icon: FileText, path: "/admin/intelligence" },
   { id: "media", name: "Media", icon: PlayCircle, path: "/admin/media" },
   { id: "collaborations", name: "Collaborations", icon: Users, path: "/admin/collaborate" },
+  { id: "join-us", name: "Join Us", icon: UserPlus, path: "/admin/join-us" },
   { id: "applications", name: "Applications", icon: UserCheck, path: "/admin/pipeline" },
-  { id: "analytics", name: "Analytics", icon: BarChart3, path: "/admin/analytics" },
   { id: "settings", name: "Settings", icon: Settings, path: "/admin/settings" },
 ];
 

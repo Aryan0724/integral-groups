@@ -2,15 +2,19 @@
 
 import { ReactLenis } from "lenis/react";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 export function SmoothScroll({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
+  const isAdmin = pathname?.startsWith("/admin");
+
+  if (!mounted || isAdmin) {
     return <>{children}</>;
   }
 

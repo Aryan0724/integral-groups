@@ -1,32 +1,62 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Footer } from "@/components/shared/Footer";
 import { Target, Shield, Rocket, User, Briefcase, Zap, Mail } from "lucide-react";
 import Link from "next/link";
-
-const founders = [
-  {
-    name: "Aryan V.",
-    role: "Founder & CEO",
-    bio: "Systems architect and visionary. Focused on the convergence of AI and industrial infrastructure.",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400",
-  },
-  {
-    name: "Vikram S.",
-    role: "Co-Founder & CTO",
-    bio: "Expert in distributed systems and high-performance computing. Architect of the Integral Core.",
-    image: "https://images.unsplash.com/photo-1519085184581-6ad74673783d?auto=format&fit=crop&q=80&w=400",
-  },
-  {
-    name: "Elena R.",
-    role: "Managing Director",
-    bio: "Specialist in ecosystem scaling and strategic partnerships. Leading the global media network.",
-    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400",
-  },
-];
+import { useContent } from "@/lib/useContent";
+import { supabase } from "@/lib/supabase";
 
 export default function AboutPage() {
+  const [mounted, setMounted] = useState(false);
+  const [foundersList, setFoundersList] = useState<any[]>([]);
+  
+  const { content } = useContent(
+    ["about.hero.title", "about.hero.subtitle", "about.philosophy.title", "about.philosophy.quote", "about.philosophy.desc"],
+    {
+      "about.hero.title": "Modular Infrastructure. Scalable Execution.",
+      "about.hero.subtitle": "Integral Group is a startup venture and modular ecosystem building digital infrastructure, media systems, and innovation platforms.",
+      "about.philosophy.title": "Precision Over Noise. Execution Over Hype.",
+      "about.philosophy.quote": "We didn't start Integral Group to join the AI hype cycle. We started it to build the actual infrastructure that makes intelligence useful in the real world.",
+      "about.philosophy.desc": "Our focus is entirely on execution. We build systems that solve structural problems in logistics, manufacturing, and global intelligence."
+    }
+  );
+
+  useEffect(() => {
+    setMounted(true);
+    async function fetchFounders() {
+      const { data, error } = await supabase.from('founders').select('*').order('order_index');
+      if (!error && data && data.length > 0) {
+        setFoundersList(data);
+      } else {
+        setFoundersList([
+          {
+            name: "Aryan V.",
+            role: "Founder & CEO",
+            bio: "Systems architect and visionary. Focused on the convergence of AI and industrial infrastructure.",
+            image_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400",
+          },
+          {
+            name: "Vikram S.",
+            role: "Co-Founder & CTO",
+            bio: "Expert in distributed systems and high-performance HPC architecture.",
+            image_url: "https://images.unsplash.com/photo-1519085184581-6ad74673783d?auto=format&fit=crop&q=80&w=400",
+          },
+          {
+            name: "Elena R.",
+            role: "Managing Director",
+            bio: "Specialist in ecosystem scaling and strategic partnerships.",
+            image_url: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400",
+          },
+        ]);
+      }
+    }
+    fetchFounders();
+  }, []);
+
+  if (!mounted) return null;
+
   return (
     <div className="relative bg-white text-black min-h-screen">
       
@@ -36,10 +66,14 @@ export default function AboutPage() {
           <div className="max-w-5xl mb-32">
             <span className="text-[10px] font-mono text-black/40 uppercase tracking-[0.5em] mb-6 block">Organization Identity</span>
             <h1 className="text-6xl md:text-[8rem] font-display font-bold mb-12 tracking-tighter leading-none uppercase">
-              Modular Infrastructure. <br /> Scalable Execution.
+              {content["about.hero.title"].split('.').map((part, i) => (
+                <React.Fragment key={i}>
+                  {part}{i < 1 ? "." : ""} {i < 1 && <br />}
+                </React.Fragment>
+              ))}
             </h1>
             <p className="text-2xl text-black/60 leading-relaxed max-w-3xl uppercase tracking-wide">
-              Integral Group is a startup venture and modular ecosystem building digital infrastructure, media systems, and innovation platforms.
+              {content["about.hero.subtitle"]}
             </p>
           </div>
 
@@ -66,7 +100,7 @@ export default function AboutPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-              {founders.map((founder, i) => (
+              {foundersList.map((founder, i) => (
                 <motion.div
                   key={founder.name}
                   initial={{ opacity: 0, y: 30 }}
@@ -77,7 +111,7 @@ export default function AboutPage() {
                 >
                   <div className="aspect-[3/4] bg-[#f4f4f4] mb-8 overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-700">
                     <img 
-                      src={founder.image} 
+                      src={founder.image_url} 
                       alt={founder.name}
                       className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-all duration-700"
                     />
@@ -109,13 +143,13 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center mb-24">
             <div className="flex flex-col gap-10">
               <span className="text-[10px] font-mono text-black/40 uppercase tracking-[0.5em]">Our Philosophy</span>
-              <h2 className="text-5xl md:text-7xl font-display font-bold leading-[0.9] tracking-tighter uppercase">Precision Over Noise. <br /> Execution Over Hype.</h2>
+              <h2 className="text-5xl md:text-7xl font-display font-bold leading-[0.9] tracking-tighter uppercase">{content["about.philosophy.title"]}</h2>
               <div className="space-y-6 text-black/60 text-lg leading-relaxed uppercase tracking-wide">
                 <p>
-                  "We didn't start Integral Group to join the AI hype cycle. We started it to build the actual infrastructure that makes intelligence useful in the real world."
+                  "{content["about.philosophy.quote"]}"
                 </p>
                 <p>
-                  Our focus is entirely on execution. We build systems that solve structural problems in logistics, manufacturing, and global intelligence. We prioritize the core layers because that's where the real leverage is.
+                  {content["about.philosophy.desc"]}
                 </p>
               </div>
             </div>
@@ -133,3 +167,4 @@ export default function AboutPage() {
     </div>
   );
 }
+

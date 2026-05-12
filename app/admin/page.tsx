@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import {
   Activity,
   Database,
-  Users,
   FileText,
   PlayCircle,
   TrendingUp,
@@ -17,15 +16,11 @@ import {
   Terminal,
   Plus,
   Settings,
+  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
 
-const stats = [
-  { label: "Intelligence Reports", value: "12", delta: "+2", icon: FileText, color: "text-cyan-500", bgColor: "bg-cyan-500/60", progress: 85 },
-  { label: "Ecosystem Nodes", value: "34", delta: "+5", icon: Database, color: "text-blue-500", bgColor: "bg-blue-500/60", progress: 92 },
-  { label: "Pipeline Dossiers", value: "142", delta: "+18", icon: Users, color: "text-purple-500", bgColor: "bg-purple-500/60", progress: 64 },
-  { label: "System Uptime", value: "99.9%", delta: "Nominal", icon: Activity, color: "text-green-500", bgColor: "bg-green-500/60", progress: 100 },
-];
 
 const activity = [
   { id: 1, title: "INT-092: Autonomous Systems Report", status: "Published", time: "12m ago", user: "Admin_Root" },
@@ -60,6 +55,13 @@ function ConnectedNode({ node, dist }: { node: typeof NODES[0]; dist: number }) 
 
 export default function DashboardPage() {
   const [dist, setDist] = useState(100);
+  const [counts, setCounts] = useState({
+    depts: 0,
+    portfolios: 0,
+    founders: 0,
+    articles: 0,
+    pipeline: 0
+  });
 
   const updateDist = useCallback(() => {
     setDist(window.innerWidth < 640 ? 70 : 110);
@@ -68,8 +70,35 @@ export default function DashboardPage() {
   useEffect(() => {
     updateDist();
     window.addEventListener("resize", updateDist, { passive: true });
+    
+    async function fetchCounts() {
+      const [depts, portfolios, founders, articles, pipeline] = await Promise.all([
+        supabase.from('departments').select('*', { count: 'exact', head: true }),
+        supabase.from('portfolios').select('*', { count: 'exact', head: true }),
+        supabase.from('founders').select('*', { count: 'exact', head: true }),
+        supabase.from('articles').select('*', { count: 'exact', head: true }),
+        supabase.from('contacts').select('*', { count: 'exact', head: true })
+      ]);
+
+      setCounts({
+        depts: depts.count || 0,
+        portfolios: portfolios.count || 0,
+        founders: founders.count || 0,
+        articles: articles.count || 0,
+        pipeline: pipeline.count || 0
+      });
+    }
+    fetchCounts();
+
     return () => window.removeEventListener("resize", updateDist);
   }, [updateDist]);
+
+  const statsList = [
+    { label: "Ecosystem Nodes", value: counts.depts.toString(), delta: "+0", icon: Database, color: "text-blue-500", bgColor: "bg-blue-500/60", progress: 100 },
+    { label: "Portfolio Items", value: counts.portfolios.toString(), delta: "+0", icon: Layers, color: "text-purple-500", bgColor: "bg-purple-500/60", progress: 100 },
+    { label: "Pipeline Dossiers", value: counts.pipeline.toString(), delta: "+0", icon: Mail, color: "text-cyan-500", bgColor: "bg-cyan-500/60", progress: 100 },
+    { label: "Intelligence Logs", value: counts.articles.toString(), delta: "+0", icon: FileText, color: "text-green-500", bgColor: "bg-green-500/60", progress: 100 },
+  ];
 
   return (
     <div className="space-y-6 lg:space-y-10 pt-2">
@@ -108,7 +137,7 @@ export default function DashboardPage() {
 
       {/* ── STATS GRID ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-        {stats.map((stat, i) => (
+        {statsList.map((stat, i) => (
           <motion.div
             key={i}
             initial={{ opacity: 0, y: 20 }}

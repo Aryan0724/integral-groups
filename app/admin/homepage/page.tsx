@@ -1,205 +1,232 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { 
-  Home, 
-  Settings, 
-  Eye, 
-  Save, 
-  Plus, 
-  Image as ImageIcon, 
-  Type, 
-  MousePointer2, 
-  Layers,
-  ChevronRight,
-  Maximize2,
-  Monitor,
-  Smartphone,
-  Tablet,
-  Layout,
-  RefreshCw
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Save, RefreshCw, AlertCircle, CheckCircle2, Home, Layout, Terminal } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
-const sections = [
-  { id: 'hero', name: 'Hero Section', status: 'Live', lastEdit: '2h ago' },
-  { id: 'ecosystem', name: 'Ecosystem Map', status: 'Live', lastEdit: '1d ago' },
-  { id: 'intelligence', name: 'Intelligence Feed', status: 'Live', lastEdit: '5h ago' },
-  { id: 'roadmap', name: 'Roadmap Phases', status: 'Draft', lastEdit: '10m ago' },
-  { id: 'transmission', name: 'Mission Transmission', status: 'Live', lastEdit: '3d ago' },
+interface ContentItem {
+  key: string;
+  value: string;
+  description: string;
+}
+
+const SECTION_GROUPS = [
+  {
+    id: "hero",
+    label: "Hero Section",
+    keys: ["home.hero.title", "home.hero.subtitle", "home.hero.video_url"]
+  },
+  {
+    id: "mission",
+    label: "Mission Transmission",
+    keys: ["home.mission.title", "home.mission.subtitle", "home.mission.quote", "home.mission.status", "home.mission.video_url", "home.mission.active"]
+  },
+  {
+    id: "ticker",
+    label: "Global Ticker",
+    keys: ["home.ticker.items"]
+  },
+  {
+    id: "roadmap",
+    label: "Strategic Roadmap",
+    keys: [
+      "home.roadmap.p1.title", "home.roadmap.p1.items",
+      "home.roadmap.p2.title", "home.roadmap.p2.items",
+      "home.roadmap.p3.title", "home.roadmap.p3.items",
+      "home.roadmap.p4.title", "home.roadmap.p4.items",
+      "home.roadmap.p5.title", "home.roadmap.p5.items"
+    ]
+  },
+  {
+    id: "philosophy",
+    label: "About & Philosophy",
+    keys: ["about.hero.title", "about.hero.subtitle", "about.philosophy.title", "about.philosophy.quote", "about.philosophy.desc"]
+  },
+  {
+    id: "systems",
+    label: "Active Systems",
+    keys: [
+      "home.systems.logistics.title", 
+      "home.systems.logistics.desc",
+      "home.systems.vision.title",
+      "home.systems.vision.desc",
+      "home.systems.infra.title",
+      "home.systems.infra.desc"
+    ]
+  }
 ];
 
-const HomepageAdmin = () => {
-  const [activeSection, setActiveSection] = useState('hero');
-  const [viewport, setViewport] = useState('desktop');
+export default function HomepageManager() {
+  const [content, setContent] = useState<Record<string, string>>({
+    "home.hero.title": "",
+    "home.hero.subtitle": "",
+    "home.ticker.items": "LOGISTICS_ENGINE // SENTINEL_VISION // NEXUS_INFRA // QUANTUM_EXECUTION",
+    "home.roadmap.p1.title": "Digital Infrastructure & Systems",
+    "home.roadmap.p1.items": "Core AI architecture design,Distributed node deployment,Industrial API framework,Strategic intelligence network",
+    "home.roadmap.p2.title": "AI Automation Ecosystems",
+    "home.roadmap.p2.items": "Autonomous workflow deployment,Predictive analytics mesh,Multi-agent system integration,Scale-ready infra hardening",
+    "home.roadmap.p3.title": "Research & Intelligence Platforms",
+    "home.roadmap.p3.items": "Real-time intelligence dashboard,Advanced robotics simulations,Systemic risk analysis engine,Public-facing research archive",
+    "home.roadmap.p4.title": "Autonomous Systems & Robotics",
+    "home.roadmap.p4.items": "Hardware-software integration,Edge-AI vision processing,Collaborative robotics testbed,System-wide autonomy layer",
+    "home.roadmap.p5.title": "Industrial Technology Expansion",
+    "home.roadmap.p5.items": "Full-scale autonomous factory OS,Planetary intelligence network,Multi-sector system synthesis,Post-industrial infrastructure"
+  });
+  const [descriptions, setDescriptions] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+
+  useEffect(() => {
+    fetchContent();
+  }, []);
+
+  async function fetchContent() {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('site_content')
+      .select('*');
+
+    if (error) {
+      console.error("Error fetching content:", error);
+      // Fallback/Mock for demo if supabase not connected
+      const mock = {
+        'home.hero.title': 'AI-Powered Automation for Every Decision',
+        'home.hero.subtitle': 'A startup venture building the digital infrastructure...',
+        'home.systems.logistics.title': 'Autonomous Logistics Engine',
+        'home.systems.logistics.desc': 'Intelligent routing and supply chain automation...',
+        'home.systems.vision.title': 'Sentinel Vision API',
+        'home.systems.vision.desc': 'Computer vision and sensory intelligence...',
+        'home.systems.infra.title': 'Nexus Infrastructure',
+        'home.systems.infra.desc': 'Decentralized cloud and computational layers...'
+      };
+      setContent(mock);
+    } else {
+      const contentMap: Record<string, string> = {};
+      const descMap: Record<string, string> = {};
+      data.forEach(item => {
+        contentMap[item.key] = item.value;
+        descMap[item.key] = item.description || "";
+      });
+      setContent(contentMap);
+      setDescriptions(descMap);
+    }
+    setLoading(false);
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    setStatus(null);
+
+    const updates = Object.entries(content).map(([key, value]) => ({
+      key,
+      value
+    }));
+
+    const { error } = await supabase
+      .from('site_content')
+      .upsert(updates, { onConflict: 'key' });
+
+    if (error) {
+      setStatus({ type: 'error', message: "Failed to save changes. Check console." });
+    } else {
+      setStatus({ type: 'success', message: "Changes saved successfully." });
+      setTimeout(() => setStatus(null), 3000);
+    }
+    setSaving(false);
+  }
+
+  const handleChange = (key: string, value: string) => {
+    setContent(prev => ({ ...prev, [key]: value }));
+  };
 
   return (
-    <div className="space-y-10">
-      
-      {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div className="space-y-8 pb-20">
+      <div className="flex items-center justify-between">
         <div>
-          <div className="flex items-center space-x-2 text-[10px] uppercase tracking-[0.4em] text-cyan-500/60 mb-4">
-            <Layout size={12} />
-            <span>Narrative_Control // Frontend_Deployment</span>
+          <div className="flex items-center space-x-2 text-[10px] uppercase tracking-[0.3em] text-cyan-500/60 mb-2">
+            <Home size={11} />
+            <span>Management_Console // Homepage</span>
           </div>
-          <h1 className="text-4xl font-bold tracking-tight uppercase">Homepage Control</h1>
+          <h1 className="text-3xl font-bold uppercase tracking-tight">Homepage Content</h1>
         </div>
-        
-        <div className="flex items-center space-x-3">
-          <button className="px-5 py-2.5 bg-white/[0.03] border border-white/10 text-white/40 text-[10px] uppercase tracking-[0.2em] font-bold hover:text-white transition-all flex items-center space-x-2">
-            <Eye size={14} />
-            <span>Live_Preview</span>
-          </button>
-          <button className="px-8 py-2.5 bg-cyan-500 text-black text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-white transition-all flex items-center space-x-2 shadow-[0_0_20px_rgba(6,182,212,0.3)]">
-            <Save size={14} />
-            <span>Deploy_Changes</span>
+
+        <div className="flex items-center gap-4">
+          {status && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className={`flex items-center gap-2 px-4 py-2 text-[10px] uppercase tracking-widest font-bold ${
+                status.type === 'success' ? 'text-green-500 bg-green-500/10' : 'text-red-500 bg-red-500/10'
+              }`}
+            >
+              {status.type === 'success' ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}
+              {status.message}
+            </motion.div>
+          )}
+          <button
+            onClick={handleSave}
+            disabled={saving || loading}
+            className="flex items-center gap-2 px-6 py-2.5 bg-white text-black text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-cyan-500 transition-all disabled:opacity-50"
+          >
+            {saving ? <RefreshCw className="animate-spin" size={12} /> : <Save size={12} />}
+            Commit_Changes
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        
-        {/* SECTION SELECTOR SIDEBAR */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between px-2 mb-2 text-[9px] uppercase tracking-[0.3em] text-white/20">
-            <span>Modular_Blocks</span>
-            <Plus size={12} className="cursor-pointer hover:text-cyan-500" />
-          </div>
-          <div className="space-y-1.5">
-            {sections.map((section) => (
-              <button
-                key={section.id}
-                onClick={() => setActiveSection(section.id)}
-                className={cn(
-                  "w-full flex items-center justify-between p-4 border transition-all duration-300 group text-left",
-                  activeSection === section.id 
-                    ? "bg-white/[0.05] border-white/20 text-white" 
-                    : "bg-black/40 border-white/5 text-white/40 hover:border-white/10"
-                )}
-              >
-                <div className="flex flex-col">
-                  <span className="text-[11px] uppercase tracking-widest font-bold mb-1">{section.name}</span>
-                  <span className="text-[8px] uppercase tracking-widest text-white/20">{section.lastEdit}</span>
-                </div>
-                <div className={cn(
-                  "w-1.5 h-1.5 rounded-full",
-                  section.status === 'Live' ? "bg-green-500/60 shadow-[0_0_5px_rgba(34,197,94,0.5)]" : "bg-white/10"
-                )} />
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* EDITOR AREA */}
-        <div className="lg:col-span-3 space-y-6">
-          
-          {/* PREVIEW VIEWPORT CONTROL */}
-          <div className="bg-black/60 border border-white/5 p-3 flex items-center justify-between rounded-xl">
-            <div className="flex items-center space-x-1">
-              {[
-                { id: 'desktop', icon: Monitor },
-                { id: 'tablet', icon: Tablet },
-                { id: 'mobile', icon: Smartphone },
-              ].map((v) => (
-                <button
-                  key={v.id}
-                  onClick={() => setViewport(v.id)}
-                  className={cn(
-                    "p-2 rounded-lg transition-all",
-                    viewport === v.id ? "bg-white/10 text-cyan-500" : "text-white/20 hover:text-white/40"
+      <div className="grid grid-cols-1 gap-8">
+        {SECTION_GROUPS.map((group) => (
+          <div key={group.id} className="border border-white/5 bg-black/40 overflow-hidden">
+            <div className="px-6 py-4 border-b border-white/5 flex items-center gap-3">
+              <Layout size={14} className="text-cyan-500" />
+              <h2 className="text-[10px] uppercase tracking-[0.25em] font-bold text-white/70">{group.label}</h2>
+            </div>
+            
+            <div className="p-8 space-y-8">
+              {group.keys.map((key) => (
+                <div key={key} className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[9px] uppercase tracking-widest text-white/30 font-mono">
+                      {key.split('.').pop()?.replace(/_/g, ' ')}
+                    </label>
+                    <span className="text-[8px] text-white/10 font-mono">ID: {key}</span>
+                  </div>
+                  
+                  {key.endsWith('.active') ? (
+                    <select
+                      value={content[key] || "true"}
+                      onChange={(e) => handleChange(key, e.target.value)}
+                      className="w-full bg-white/[0.02] border border-white/10 px-4 py-3 text-sm text-white/80 focus:border-cyan-500/50 outline-none transition-colors cursor-pointer"
+                    >
+                      <option value="true" className="bg-black text-white">ACTIVE (Visible)</option>
+                      <option value="false" className="bg-black text-white">INACTIVE (Hidden)</option>
+                    </select>
+                  ) : key.includes('subtitle') || key.includes('desc') ? (
+                    <textarea
+                      value={content[key] || ""}
+                      onChange={(e) => handleChange(key, e.target.value)}
+                      rows={3}
+                      className="w-full bg-white/[0.02] border border-white/10 p-4 text-sm text-white/80 focus:border-cyan-500/50 outline-none transition-colors resize-none"
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      value={content[key] || ""}
+                      onChange={(e) => handleChange(key, e.target.value)}
+                      className="w-full bg-white/[0.02] border border-white/10 px-4 py-3 text-sm text-white/80 focus:border-cyan-500/50 outline-none transition-colors"
+                    />
                   )}
-                >
-                  <v.icon size={16} />
-                </button>
+                  {descriptions[key] && (
+                    <p className="text-[9px] text-white/20 italic">{descriptions[key]}</p>
+                  )}
+                </div>
               ))}
             </div>
-            <div className="text-[9px] uppercase tracking-widest text-white/20 font-mono">
-              Viewport: {viewport}_Mode // 100%_Scale
-            </div>
-            <button className="p-2 text-white/20 hover:text-white transition-colors">
-              <RefreshCw size={14} />
-            </button>
           </div>
-
-          {/* DYNAMIC EDITOR FIELDS */}
-          <div className="bg-black/40 border border-white/5 p-10 space-y-8 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-grid opacity-[0.02] pointer-events-none" />
-            
-            <div className="space-y-6 max-w-2xl">
-              {/* Field Group: Narrative */}
-              <div className="space-y-4">
-                <div className="flex items-center space-x-2 text-white/20 mb-2">
-                  <Type size={14} />
-                  <span className="text-[9px] uppercase tracking-[0.3em]">Operational_Copy</span>
-                </div>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-[8px] uppercase tracking-widest text-white/30 ml-2">Hero_Primary_Title</label>
-                    <input 
-                      type="text" 
-                      defaultValue="Engineering Multi-Sector Execution"
-                      className="w-full bg-white/[0.03] border border-white/5 p-4 text-xl font-bold tracking-tight uppercase focus:border-cyan-500/30 focus:bg-white/[0.05] outline-none transition-all"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[8px] uppercase tracking-widest text-white/30 ml-2">Hero_Subtitle_Manifesto</label>
-                    <textarea 
-                      defaultValue="A unified digital ecosystem dedicated to building high-throughput infrastructure and modular systems."
-                      className="w-full bg-white/[0.03] border border-white/5 p-4 text-sm text-white/60 leading-relaxed focus:border-cyan-500/30 focus:bg-white/[0.05] outline-none transition-all h-24 resize-none"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Field Group: CTA */}
-              <div className="space-y-4 pt-6 border-t border-white/5">
-                <div className="flex items-center space-x-2 text-white/20 mb-2">
-                  <MousePointer2 size={14} />
-                  <span className="text-[9px] uppercase tracking-[0.3em]">Command_Actions</span>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[8px] uppercase tracking-widest text-white/30 ml-2">Primary_CTA_Label</label>
-                    <input 
-                      type="text" 
-                      defaultValue="Explore_Ecosystem"
-                      className="w-full bg-white/[0.03] border border-white/5 p-3 text-[10px] uppercase tracking-[0.2em] font-bold focus:border-cyan-500/30 outline-none transition-all"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[8px] uppercase tracking-widest text-white/30 ml-2">Secondary_CTA_Label</label>
-                    <input 
-                      type="text" 
-                      defaultValue="Initiate_Briefing"
-                      className="w-full bg-white/[0.03] border border-white/5 p-3 text-[10px] uppercase tracking-[0.2em] font-bold focus:border-cyan-500/30 outline-none transition-all"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Field Group: Visuals */}
-              <div className="space-y-4 pt-6 border-t border-white/5">
-                <div className="flex items-center space-x-2 text-white/20 mb-2">
-                  <ImageIcon size={14} />
-                  <span className="text-[9px] uppercase tracking-[0.3em]">Atmospheric_Layer</span>
-                </div>
-                <div className="p-6 border border-dashed border-white/10 bg-white/[0.01] flex flex-col items-center justify-center hover:bg-white/[0.03] hover:border-cyan-500/30 transition-all cursor-pointer group">
-                  <div className="p-3 rounded-full bg-white/5 mb-3 group-hover:text-cyan-500 transition-colors">
-                    <RefreshCw size={20} />
-                  </div>
-                  <span className="text-[10px] uppercase tracking-widest text-white/30 font-bold group-hover:text-white transition-colors">Sync_New_Visual_Asset</span>
-                  <span className="text-[8px] text-white/10 uppercase tracking-widest mt-1">Recommended: 4K_RAW_SOURCE</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
-
     </div>
   );
-};
-
-export default HomepageAdmin;
+}

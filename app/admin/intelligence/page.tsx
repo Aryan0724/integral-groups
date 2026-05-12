@@ -1,172 +1,201 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  FileText, 
-  Search, 
-  Plus, 
-  Filter, 
-  Eye, 
-  Edit2, 
-  Trash2, 
-  Lock, 
-  Globe, 
-  ShieldCheck,
-  ChevronRight,
-  Clock,
-  MoreVertical
+  Plus, Search, Edit2, Trash2, FileText, Save, X, 
+  RefreshCw, AlertCircle, Eye, Globe, Clock
 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 
-const articles = [
-  { id: 'INT-092', title: "Future of Autonomous Systems", clearance: 'LEVEL_4', type: 'Strategic Briefing', status: 'Published', date: '2026.05.10', color: 'text-cyan-500' },
-  { id: 'INT-089', title: "Ecosystem Engineering Doctrine", clearance: 'PUBLIC', type: 'Institutional Lore', status: 'Draft', date: '2026.05.08', color: 'text-white/40' },
-  { id: 'INT-085', title: "Scalable Infrastructure Architecture", clearance: 'LEVEL_3', type: 'Engineering Report', status: 'Published', date: '2026.05.05', color: 'text-green-500' },
-  { id: 'INT-082', title: "Intelligence Layer Protocol", clearance: 'LEVEL_5', type: 'Systems Analysis', status: 'Classified', date: '2026.04.30', color: 'text-red-500' },
-];
+interface Article {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  category: string;
+  image_url: string;
+  status: string;
+  published_at: string;
+}
 
-const IntelligenceAdmin = () => {
-  const [search, setSearch] = useState("");
+export default function IntelligenceManager() {
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingArticle, setEditingArticle] = useState<Partial<Article> | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    fetchArticles();
+  }, []);
+
+  async function fetchArticles() {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('articles')
+      .select('*')
+      .order('published_at', { ascending: false });
+
+    if (!error && data) {
+      setArticles(data);
+    }
+    setLoading(false);
+  }
+
+  async function handleSave() {
+    if (!editingArticle?.title) return;
+
+    const slug = editingArticle.slug || editingArticle.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+    const articleToSave = { ...editingArticle, slug };
+
+    let error;
+    if (articleToSave.id) {
+      ({ error } = await supabase
+        .from('articles')
+        .update(articleToSave)
+        .eq('id', articleToSave.id));
+    } else {
+      ({ error } = await supabase
+        .from('articles')
+        .insert([articleToSave]));
+    }
+
+    if (!error) {
+      setEditingArticle(null);
+      fetchArticles();
+    } else {
+      alert("Error saving article: " + error.message);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (confirm("Permanently archive this report?")) {
+      const { error } = await supabase
+        .from('articles')
+        .delete()
+        .eq('id', id);
+      
+      if (!error) fetchArticles();
+    }
+  }
 
   return (
-    <div className="space-y-10">
-      
-      {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div className="space-y-8 pb-20">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center space-x-2 text-[10px] uppercase tracking-[0.4em] text-cyan-500/60 mb-4">
-            <FileText size={12} />
-            <span>Classified_Repository // Intelligence_Layer</span>
+          <div className="flex items-center space-x-2 text-[10px] uppercase tracking-[0.4em] text-cyan-500/60 mb-2">
+            <FileText size={11} />
+            <span>Infrastructure // Intelligence</span>
           </div>
-          <h1 className="text-4xl font-bold tracking-tight uppercase">Intelligence System</h1>
+          <h1 className="text-3xl font-bold uppercase tracking-tight text-white">Intelligence Reports</h1>
         </div>
-        
-        <button className="px-8 py-3 bg-cyan-500 text-black text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-white transition-all flex items-center space-x-3">
+
+        <button
+          onClick={() => setEditingArticle({ title: "", content: "", excerpt: "", category: "INTELLIGENCE", status: "PUBLISHED" })}
+          className="flex items-center gap-2 px-6 py-2.5 bg-white text-black text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-cyan-500 transition-all"
+        >
           <Plus size={14} />
-          <span>New_Transmission</span>
+          Initialize_Transmission
         </button>
       </div>
 
-      {/* FILTER & SEARCH BAR */}
-      <div className="flex items-center space-x-4 bg-white/[0.02] border border-white/5 p-2 rounded-xl">
-        <div className="relative flex-1 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-cyan-500 transition-colors" size={16} />
-          <input 
-            type="text" 
-            placeholder="Filter Dossiers..."
-            className="w-full bg-transparent border-none py-3 pl-12 pr-6 text-sm uppercase tracking-widest placeholder:text-white/10 focus:outline-none"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="flex items-center space-x-1 pr-2">
-          {['All', 'Published', 'Classified', 'Draft'].map((f) => (
-            <button key={f} className="px-5 py-2 text-[9px] uppercase tracking-widest text-white/30 hover:text-white transition-colors">
-              {f}
-            </button>
-          ))}
-          <div className="w-px h-6 bg-white/5 mx-2" />
-          <button className="p-2 text-white/20 hover:text-white transition-colors">
-            <Filter size={16} />
-          </button>
-        </div>
-      </div>
-
-      {/* INTELLIGENCE GRID */}
+      {/* List */}
       <div className="grid grid-cols-1 gap-4">
-        {articles.map((article, i) => (
-          <motion.div
-            key={article.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-            className="group relative bg-black/40 border border-white/5 hover:border-white/10 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all duration-500"
-          >
-            {/* Status Line */}
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/5 group-hover:bg-cyan-500/30 transition-colors" />
-
-            <div className="flex items-center space-x-6 flex-1">
-              <div className="flex flex-col items-center justify-center space-y-1 shrink-0">
-                <span className="text-[9px] text-white/20 font-mono tracking-tighter">{article.id}</span>
-                <div className={cn("p-3 bg-white/[0.03] border border-white/5", article.color)}>
-                  <FileText size={20} />
+        {loading ? (
+          Array(3).fill(0).map((_, i) => (
+            <div key={i} className="h-24 bg-white/[0.02] border border-white/5 animate-pulse" />
+          ))
+        ) : articles.length > 0 ? (
+          articles.map((article) => (
+            <div key={article.id} className="group p-6 border border-white/5 bg-black/40 hover:bg-white/[0.02] hover:border-cyan-500/20 transition-all flex items-center justify-between">
+              <div className="flex items-center space-x-6">
+                <div className="w-12 h-12 bg-white/5 flex items-center justify-center border border-white/5">
+                  <FileText size={20} className="text-white/20 group-hover:text-cyan-500 transition-colors" />
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center space-x-3">
-                  <h3 className="text-lg font-bold tracking-tight group-hover:text-cyan-500 transition-colors uppercase">{article.title}</h3>
-                  <div className="flex items-center space-x-1.5 px-2 py-0.5 bg-white/[0.03] border border-white/5 rounded text-[8px] uppercase tracking-widest text-white/30">
-                    <Clock size={10} />
-                    <span>{article.date}</span>
+                <div>
+                  <div className="flex items-center space-x-3 mb-1">
+                    <span className="text-[10px] text-cyan-500/60 font-mono uppercase tracking-widest">{article.category}</span>
+                    <span className="w-1 h-1 bg-white/10 rounded-full" />
+                    <span className="text-[10px] text-white/20 font-mono uppercase tracking-widest">{new Date(article.published_at).toLocaleDateString()}</span>
                   </div>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <span className="text-[10px] uppercase tracking-widest text-white/40">{article.type}</span>
-                  <div className="w-1 h-1 bg-white/10 rounded-full" />
-                  <div className="flex items-center space-x-2">
-                    {article.clearance === 'PUBLIC' ? <Globe size={12} className="text-green-500/60" /> : <ShieldCheck size={12} className="text-red-500/60" />}
-                    <span className={cn("text-[9px] uppercase tracking-widest font-mono", 
-                      article.clearance === 'PUBLIC' ? "text-green-500/60" : "text-red-500/60"
-                    )}>{article.clearance}_ACCESS</span>
-                  </div>
+                  <h3 className="text-sm font-bold uppercase tracking-tight text-white/80 group-hover:text-white transition-colors">{article.title}</h3>
                 </div>
               </div>
-            </div>
 
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-6 pr-6 border-r border-white/5">
-                <div className="flex flex-col items-end">
-                  <span className="text-[8px] uppercase tracking-widest text-white/20 mb-1">Status</span>
-                  <span className={cn("text-[10px] uppercase tracking-widest font-bold", 
-                    article.status === 'Published' ? "text-green-500" : "text-yellow-500"
-                  )}>{article.status}</span>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <button className="p-2.5 bg-white/5 border border-white/5 text-white/30 hover:text-white hover:border-white/10 transition-all rounded-lg">
-                  <Eye size={16} />
-                </button>
-                <button className="p-2.5 bg-white/5 border border-white/5 text-white/30 hover:text-cyan-500 hover:border-cyan-500/20 transition-all rounded-lg">
+              <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-all">
+                <button onClick={() => setEditingArticle(article)} className="p-2 text-white/40 hover:text-cyan-500 transition-colors">
                   <Edit2 size={16} />
                 </button>
-                <button className="p-2.5 text-white/10 hover:text-red-500 transition-colors">
+                <button onClick={() => handleDelete(article.id)} className="p-2 text-white/40 hover:text-red-500 transition-colors">
                   <Trash2 size={16} />
                 </button>
               </div>
             </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* SYSTEM METRICS BOX */}
-      <div className="p-8 border border-white/5 bg-black/40 flex items-center justify-between relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-64 h-full bg-[radial-gradient(circle_at_center,_rgba(6,182,212,0.05)_0%,_transparent_70%)]" />
-        <div className="relative z-10 flex flex-col space-y-1">
-          <span className="text-[9px] text-white/20 uppercase tracking-widest font-mono">Transmission_Status</span>
-          <div className="flex items-center space-x-4">
-            <h2 className="text-xl font-light tracking-widest uppercase">98% Data Integrity</h2>
-            <div className="flex items-center space-x-1">
-              {[0, 1, 2, 3].map((i) => (
-                <motion.div 
-                  key={i}
-                  animate={{ height: [8, 16, 8] }}
-                  transition={{ duration: 1, delay: i * 0.1, repeat: Infinity }}
-                  className="w-1 bg-cyan-500/40 rounded-full"
-                />
-              ))}
-            </div>
+          ))
+        ) : (
+          <div className="py-20 text-center border border-dashed border-white/10">
+             <AlertCircle className="mx-auto mb-4 text-white/10" size={32} />
+             <div className="text-[10px] uppercase tracking-[0.3em] text-white/20">No active transmissions in the log.</div>
           </div>
-        </div>
-        <button className="relative z-10 text-[10px] uppercase tracking-[0.3em] text-white/40 hover:text-white transition-colors flex items-center space-x-3">
-          <span>Run_Diagnostic</span>
-          <ChevronRight size={14} />
-        </button>
+        )}
       </div>
 
+      {/* Modal */}
+      <AnimatePresence>
+        {editingArticle && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setEditingArticle(null)} className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100]" />
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="fixed inset-4 md:inset-10 lg:inset-20 bg-[#050505] border border-white/10 z-[101] flex flex-col">
+              <div className="px-8 py-4 border-b border-white/5 flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Globe size={14} className="text-cyan-500" />
+                  <h2 className="text-[10px] uppercase tracking-[0.3em] font-bold">Transmission_Config // {editingArticle.id ? "Edit" : "New"}</h2>
+                </div>
+                <button onClick={() => setEditingArticle(null)} className="text-white/20 hover:text-white"><X size={18} /></button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-8 grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-[9px] uppercase tracking-[0.4em] text-white/20 font-mono">Report_Title</label>
+                    <input value={editingArticle.title} onChange={e => setEditingArticle({...editingArticle, title: e.target.value})} className="w-full bg-white/[0.02] border border-white/10 px-6 py-4 text-white outline-none focus:border-cyan-500/50" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] uppercase tracking-[0.4em] text-white/20 font-mono">Excerpt_Summary</label>
+                    <textarea value={editingArticle.excerpt} onChange={e => setEditingArticle({...editingArticle, excerpt: e.target.value})} rows={3} className="w-full bg-white/[0.02] border border-white/10 px-6 py-4 text-white outline-none focus:border-cyan-500/50 resize-none" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[9px] uppercase tracking-[0.4em] text-white/20 font-mono">Category</label>
+                      <input value={editingArticle.category} onChange={e => setEditingArticle({...editingArticle, category: e.target.value})} className="w-full bg-white/[0.02] border border-white/10 px-6 py-4 text-white outline-none focus:border-cyan-500/50" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[9px] uppercase tracking-[0.4em] text-white/20 font-mono">Status</label>
+                      <select value={editingArticle.status} onChange={e => setEditingArticle({...editingArticle, status: e.target.value})} className="w-full bg-white/[0.02] border border-white/10 px-6 py-4 text-white outline-none focus:border-cyan-500/50 appearance-none">
+                        <option value="PUBLISHED">PUBLISHED</option>
+                        <option value="DRAFT">DRAFT</option>
+                        <option value="ARCHIVED">ARCHIVED</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2 flex flex-col h-full">
+                  <label className="text-[9px] uppercase tracking-[0.4em] text-white/20 font-mono">Intelligence_Payload (Markdown)</label>
+                  <textarea value={editingArticle.content} onChange={e => setEditingArticle({...editingArticle, content: e.target.value})} className="flex-1 w-full bg-white/[0.01] border border-white/10 p-8 text-white/80 font-mono text-sm outline-none focus:border-cyan-500/30 resize-none" placeholder="# Start typing..." />
+                </div>
+              </div>
+
+              <div className="p-8 border-t border-white/5 flex justify-end gap-6">
+                <button onClick={() => setEditingArticle(null)} className="text-[10px] uppercase tracking-[0.4em] text-white/20 hover:text-white">Abort_Transmission</button>
+                <button onClick={handleSave} className="px-12 py-4 bg-white text-black text-[10px] uppercase tracking-[0.4em] font-bold hover:bg-cyan-500 transition-all">Initialize_Stream</button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
-};
-
-export default IntelligenceAdmin;
+}

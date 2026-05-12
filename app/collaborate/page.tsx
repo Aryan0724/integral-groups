@@ -1,35 +1,50 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import Link from "next/link";
-
-const tracks = [
-  {
-    code: "ENG",
-    title: "Engineering",
-    desc: "Software systems, AI platforms, backend infrastructure, automation pipelines.",
-    tags: ["Full-Stack", "AI/ML", "Systems Architecture", "DevOps"],
-  },
-  {
-    code: "CRE",
-    title: "Creative",
-    desc: "Visual identity, cinematography, motion design, brand systems and digital presence.",
-    tags: ["UI/UX", "Cinematography", "Motion", "Brand"],
-  },
-  {
-    code: "STR",
-    title: "Strategy",
-    desc: "Ecosystem architecture, market intelligence, operational frameworks, and growth systems.",
-    tags: ["Research", "Operations", "Product", "Systems Thinking"],
-  },
-  {
-    code: "RES",
-    title: "Research",
-    desc: "Technical analysis, engineering essays, emerging technology, and future-systems thinking.",
-    tags: ["Technical Writing", "AI Research", "Systems Analysis", "Documentation"],
-  },
-];
+import { useContent } from "@/lib/useContent";
+import { supabase } from "@/lib/supabase";
 
 export default function CollaboratePage() {
+  const { content } = useContent(
+    ["collab.hero.title", "collab.hero.subtitle", "collab.cta.title", "collab.cta.desc"],
+    {
+      "collab.hero.title": "Assemble The Team",
+      "collab.hero.subtitle": "We are building engineers, creators, strategists, and system thinkers into a modular execution force. This is not a job listing. This is a mission invitation.",
+      "collab.cta.title": "Send your dossier.",
+      "collab.cta.desc": "No formal process. No corporate HR. Send an email outlining your background, what you build, and why Integral's mission resonates with you."
+    }
+  );
+
+  const [tracks, setTracks] = useState<any[]>([
+    {
+      code: "ENG",
+      title: "Engineering",
+      desc: "Software systems, AI platforms, backend infrastructure, automation pipelines.",
+      tags: ["Full-Stack", "AI/ML", "Systems Architecture", "DevOps"],
+    },
+    {
+      code: "CRE",
+      title: "Creative",
+      desc: "Visual identity, cinematography, motion design, brand systems and digital presence.",
+      tags: ["UI/UX", "Cinematography", "Motion", "Brand"],
+    },
+    {
+      code: "STR",
+      title: "Strategy",
+      desc: "Ecosystem architecture, market intelligence, operational frameworks, and growth systems.",
+      tags: ["Research", "Operations", "Product", "Systems Thinking"],
+    },
+    {
+      code: "RES",
+      title: "Research",
+      desc: "Technical analysis, engineering essays, emerging technology, and future-systems thinking.",
+      tags: ["Technical Writing", "AI Research", "Systems Analysis", "Documentation"],
+    },
+  ]);
+
   return (
     <main className="min-h-screen bg-black overflow-hidden flex flex-col">
       <Navbar />
@@ -50,11 +65,11 @@ export default function CollaboratePage() {
             
             <h1 className="text-display text-5xl md:text-8xl lg:text-[130px] font-bold tracking-tighter uppercase text-white leading-[0.85] mb-16">
               Assemble<br />
-              <span className="text-white/40 text-[0.75em]">The Team</span>
+              <span className="text-white/40 text-[0.75em]">{content["collab.hero.title"].split(' ').slice(1).join(' ')}</span>
             </h1>
             
             <p className="text-xl md:text-2xl text-white/50 font-light leading-relaxed max-w-2xl text-balance">
-              We are building engineers, creators, strategists, and system thinkers into a modular execution force. This is not a job listing. This is a mission invitation.
+              {content["collab.hero.subtitle"]}
             </p>
           </div>
 
@@ -78,7 +93,7 @@ export default function CollaboratePage() {
                 </p>
 
                 <div className="flex flex-wrap gap-2">
-                  {track.tags.map((tag) => (
+                  {track.tags.map((tag: string) => (
                     <span key={tag} className="px-3 py-1 border border-white/10 text-[9px] font-mono uppercase tracking-widest text-white/30 group-hover:border-cyan-500/30 group-hover:text-cyan-500/50 transition-colors">
                       {tag}
                     </span>
@@ -95,9 +110,9 @@ export default function CollaboratePage() {
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between border-t border-white/10 pt-16 gap-12">
             <div className="max-w-xl">
               <div className="text-[10px] font-mono text-white/30 uppercase tracking-[0.4em] mb-6">HOW TO APPLY</div>
-              <h3 className="text-display text-3xl font-bold uppercase text-white mb-4">Send your dossier.</h3>
+              <h3 className="text-display text-3xl font-bold uppercase text-white mb-4">{content["collab.cta.title"]}</h3>
               <p className="text-white/40 text-sm font-light leading-relaxed">
-                No formal process. No corporate HR. Send an email outlining your background, what you build, and why Integral's mission resonates with you. We will respond to those who demonstrate execution capability.
+                {content["collab.cta.desc"]}
               </p>
             </div>
             
@@ -123,3 +138,4 @@ export default function CollaboratePage() {
     </main>
   );
 }
+

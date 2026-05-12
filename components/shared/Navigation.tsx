@@ -43,34 +43,53 @@ export function Navigation() {
             <Logo isWhite={true} size="sm" />
           </Link>
 
+          {/* Desktop Nav Links */}
+          <div className="hidden xl:flex items-center gap-1">
+            {navLinks.slice(0, 4).map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                className={cn(
+                  "px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 hover:text-white transition-colors",
+                  pathname === link.href && "text-white bg-white/5 rounded-lg"
+                )}
+              >
+                {link.name}
+              </Link>
+            ))}
+          </div>
+
           {/* Right Actions */}
-          <div className="flex items-center gap-0">
-            {/* About Us */}
+          <div className="flex items-center gap-4">
+            <Link
+              href="/journal"
+              className={cn(
+                "hidden xl:flex px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 hover:text-white transition-colors",
+                pathname === "/journal" && "text-white bg-white/5 rounded-lg"
+              )}
+            >
+              Journal
+            </Link>
             <Link
               href="/about"
-              className="hidden lg:flex items-center px-6 text-[12px] font-bold uppercase tracking-[0.2em] text-white/70 hover:text-white transition-colors"
+              className={cn(
+                "hidden xl:flex px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 hover:text-white transition-colors",
+                pathname === "/about" && "text-white bg-white/5 rounded-lg"
+              )}
             >
-              About Us
+              About
             </Link>
 
-            {/* Collaborate */}
+            {/* Join Us CTA */}
             <Link
               href="/contact"
-              className="hidden sm:flex items-center px-6 text-[12px] font-bold uppercase tracking-[0.2em] text-white/70 hover:text-white transition-colors"
-            >
-              Collaborate
-            </Link>
-
-            {/* Join Us */}
-            <Link
-              href="/about"
-              className="hidden sm:flex items-center px-10 h-10 rounded-xl bg-white text-black text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-white/90 transition-all shadow-xl"
+              className="hidden sm:flex items-center px-8 h-10 rounded-xl bg-white text-black text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-cyan-500 hover:text-white transition-all shadow-xl"
             >
               Join Us
             </Link>
 
             {/* Icons */}
-            <div className="flex items-center ml-6 divide-x divide-white/10 h-10">
+            <div className="flex items-center ml-2 divide-x divide-white/10 h-10">
               <button
                 className="px-4 flex items-center justify-center text-white/50 hover:text-white transition-colors"
                 aria-label="Search"

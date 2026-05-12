@@ -32,17 +32,20 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="bg-white text-black py-24 border-t border-black/5">
-      <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
+    <footer className="bg-black text-white py-32 border-t border-white/5 relative overflow-hidden">
+      {/* Background Ambience */}
+      <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-cyan-500/5 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2" />
+      
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-16">
           {/* Copyright & Logo Section */}
           <div className="lg:col-span-1">
-            <Link href="/" className="mb-8 flex items-center">
-              <Logo />
+            <Link href="/" className="mb-10 flex items-center">
+              <Logo isWhite={true} />
             </Link>
-            <div className="flex flex-col gap-1">
-              <span className="text-[12px] font-medium tracking-tight">© 2026 Integral Group Holdings Inc.</span>
-              <span className="text-[12px] text-black/50 uppercase tracking-widest">Sys_v4.2.0</span>
+            <div className="flex flex-col gap-2">
+              <span className="text-[11px] font-bold tracking-tight text-white/80">© 2026 Integral Group Holdings Inc.</span>
+              <span className="text-[10px] text-white/20 uppercase tracking-[0.3em] font-mono">INTEGRAL_SYSTEM_v4.2.0</span>
             </div>
           </div>
 
@@ -50,11 +53,11 @@ export function Footer() {
           {/* Links Sections */}
           {Object.entries(footerLinks).map(([title, links]) => (
             <div key={title}>
-              <h4 className="text-[10px] font-bold text-black/40 uppercase tracking-widest mb-6">{title}</h4>
-              <ul className="space-y-3">
+              <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.4em] mb-8">{title}</h4>
+              <ul className="space-y-4">
                 {links.map((link) => (
                   <li key={link.name}>
-                    <Link href={link.href} className="text-[13px] font-medium hover:text-primary transition-colors">
+                    <Link href={link.href} className="text-[12px] font-bold uppercase tracking-widest text-white/40 hover:text-cyan-500 transition-all duration-300">
                       {link.name}
                     </Link>
                   </li>

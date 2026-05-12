@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, Volume2, VolumeX, Maximize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useContent } from "@/lib/useContent";
 
 export const MissionTransmission = () => {
   const [mounted, setMounted] = useState(false);
@@ -24,7 +25,45 @@ export const MissionTransmission = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, [checkMobile]);
 
-  if (!mounted) return <section className="min-h-screen bg-black" />;
+  const { content } = useContent(
+    ["home.mission.title", "home.mission.subtitle", "home.mission.quote", "home.mission.status", "home.mission.video_url", "home.mission.active"],
+    {
+      "home.mission.title": "Mission Briefing",
+      "home.mission.subtitle": "REF: STRATEGIC_VISION_v2.0 // ORIGIN: INTEGRAL_CORE",
+      "home.mission.quote": "Engineering the modular infrastructure required to execute at the speed of the future.",
+      "home.mission.status": "LIVE TRANSMISSION",
+      "home.mission.video_url": "https://youtu.be/yd4Dp0j7I74",
+      "home.mission.active": "true"
+    }
+  );
+
+  const videoElementRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoElementRef.current) {
+      if (isPlaying) videoElementRef.current.play();
+      else videoElementRef.current.pause();
+    }
+  }, [isPlaying]);
+
+  useEffect(() => {
+    if (videoElementRef.current) {
+      videoElementRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
+
+  const getYouTubeId = (url: string) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  // Ensure we have a video ID even if the content value is an empty string
+  const rawVideoUrl = content["home.mission.video_url"];
+  const videoId = getYouTubeId(rawVideoUrl) || "yd4Dp0j7I74";
+
+  if (!mounted || content["home.mission.active"] !== "true") return null;
 
   return (
     <section className="relative min-h-screen w-full bg-black flex items-center justify-center py-32 overflow-hidden border-t border-white/5">
@@ -48,13 +87,13 @@ export const MissionTransmission = () => {
                 transition={{ duration: 2, repeat: Infinity }}
                 className="w-2 h-2 bg-red-500 rounded-full shadow-[0_0_10px_rgba(239,68,68,0.8)]"
               />
-              <span className="text-white/40 text-[10px] uppercase tracking-[0.5em] font-mono">LIVE TRANSMISSION</span>
+              <span className="text-white/40 text-[10px] uppercase tracking-[0.5em] font-mono">{content["home.mission.status"]}</span>
             </div>
-            <h2 className="text-display text-4xl md:text-6xl font-bold tracking-tight mb-4 uppercase">
-              Mission Briefing
+            <h2 className="text-display text-4xl md:text-6xl font-bold tracking-tight mb-4 uppercase text-white">
+              {content["home.mission.title"]}
             </h2>
             <div className="text-cyan-500/60 font-mono text-[9px] uppercase tracking-[0.3em]">
-              REF: STRATEGIC_VISION_v2.0 // ORIGIN: INTEGRAL_CORE
+              {content["home.mission.subtitle"]}
             </div>
           </motion.div>
 
@@ -73,25 +112,38 @@ export const MissionTransmission = () => {
               isPlaying && !isMobile && "scale-105"
             )}
           >
-            {/* The "Video" Layer (Strategic Placeholder) */}
+            {/* The "Video" Layer */}
             <div className="absolute inset-0 flex items-center justify-center bg-[#080808]">
               {/* Background Tactical Grid */}
               <div className="absolute inset-0 bg-grid-small opacity-20" />
               
-              {/* Central Blueprint Animation (placeholder for founder) */}
-              <motion.div 
-                animate={{ 
-                  scale: isMobile ? 1 : [1, 1.05, 1],
-                  opacity: isMobile ? 0.3 : [0.3, 0.5, 0.3]
-                }}
-                transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-                className="relative w-48 h-48 md:w-96 md:h-96 border border-cyan-500/10 rounded-full flex items-center justify-center"
-              >
-                {!isMobile && <div className="absolute inset-0 border border-dashed border-cyan-500/5 rounded-full animate-[spin_60s_linear_infinite]" />}
-                <div className="w-32 h-32 md:w-64 md:h-64 border border-cyan-500/20 rounded-full flex items-center justify-center">
-                  <div className="w-1 h-1 bg-cyan-500 rounded-full shadow-[0_0_20px_rgba(6,182,212,1)]" />
+              {/* YouTube Embed */}
+              {videoId ? (
+                <div className={cn(
+                  "absolute inset-0 transition-opacity duration-1000",
+                  isPlaying ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                )}>
+                   {isPlaying && (
+                     <iframe
+                        key={videoId}
+                        className="w-full h-full object-cover"
+                        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&mute=${isMuted ? 1 : 0}&enablejsapi=1`}
+                        allow="autoplay; encrypted-media; picture-in-picture"
+                        allowFullScreen
+                      />
+                   )}
                 </div>
-              </motion.div>
+              ) : (
+                /* Fallback Graphic when no video URL */
+                <div className="absolute inset-0 flex items-center justify-center bg-[#0a0a0a]">
+                   <div className="relative w-48 h-48 border border-white/5 rounded-full flex items-center justify-center">
+                      <div className="absolute inset-0 border border-dashed border-cyan-500/10 rounded-full animate-[spin_30s_linear_infinite]" />
+                      <div className="w-24 h-24 border border-cyan-500/20 rounded-full flex items-center justify-center">
+                        <div className="w-1 h-1 bg-cyan-500 rounded-full shadow-[0_0_10px_rgba(6,182,212,1)]" />
+                      </div>
+                   </div>
+                </div>
+              )}
 
               <AnimatePresence>
                 {!isPlaying && (
@@ -99,7 +151,7 @@ export const MissionTransmission = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="relative z-20 flex flex-col items-center"
+                    className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/60 backdrop-blur-[2px]"
                   >
                     <div className="mb-8 flex flex-col items-center">
                       <span className="text-[8px] md:text-[10px] text-cyan-500/40 font-mono tracking-[0.5em] mb-2 uppercase">DATA_STREAM: PENDING</span>
@@ -119,15 +171,15 @@ export const MissionTransmission = () => {
                     <motion.div 
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ delay: 1 }}
+                      transition={{ duration: 1 }}
                       className="mt-8 md:mt-12 text-center max-w-lg px-6"
                     >
                       <div className="flex items-center justify-center space-x-2 mb-4">
                         <div className="w-1 h-1 bg-cyan-500 rounded-full animate-pulse" />
                         <span className="text-[8px] md:text-[10px] uppercase tracking-[0.4em] text-white/50 font-mono">MISSION_MANIFESTO_v1.0</span>
                       </div>
-                      <h3 className="text-sm md:text-2xl font-light text-white/80 leading-relaxed tracking-wide text-balance">
-                        "Engineering the modular infrastructure required to execute at the speed of the future."
+                      <h3 className="text-sm md:text-2xl font-light text-white/80 leading-relaxed tracking-wide text-balance uppercase font-bold">
+                        "{content["home.mission.quote"]}"
                       </h3>
                     </motion.div>
                   </motion.div>
