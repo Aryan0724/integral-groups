@@ -8,4 +8,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Supabase credentials missing. Admin panel and dynamic content will use mock data.');
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+// Ensure the client is initialized even if credentials are missing to avoid crashing the build
+export const supabase = createClient<Database>(
+  supabaseUrl || 'https://placeholder-url.supabase.co', 
+  supabaseAnonKey || 'placeholder-key'
+);
