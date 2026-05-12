@@ -33,8 +33,8 @@ export default function AboutManager() {
 
   async function fetchData() {
     setLoading(true);
-    const contentPromise = supabase.from('site_content').select('*');
-    const foundersPromise = supabase.from('founders').select('*').order('order_index');
+    const contentPromise = (supabase.from('site_content') as any).select('*');
+    const foundersPromise = (supabase.from('founders') as any).select('*').order('order_index');
 
     const [contentRes, foundersRes] = await Promise.all([contentPromise, foundersPromise]);
 

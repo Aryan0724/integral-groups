@@ -31,8 +31,7 @@ export default function PortfolioManager() {
 
   async function fetchItems() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('portfolios')
+    const { data, error } = await (supabase.from('portfolios') as any)
       .select('*')
       .order('created_at', { ascending: false });
 

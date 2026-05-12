@@ -33,8 +33,7 @@ export default function IntelligenceManager() {
 
   async function fetchArticles() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('articles')
+    const { data, error } = await (supabase.from('articles') as any)
       .select('*')
       .order('published_at', { ascending: false });
 

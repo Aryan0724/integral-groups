@@ -73,11 +73,11 @@ export default function DashboardPage() {
     
     async function fetchCounts() {
       const [depts, portfolios, founders, articles, pipeline] = await Promise.all([
-        supabase.from('departments').select('*', { count: 'exact', head: true }),
-        supabase.from('portfolios').select('*', { count: 'exact', head: true }),
-        supabase.from('founders').select('*', { count: 'exact', head: true }),
-        supabase.from('articles').select('*', { count: 'exact', head: true }),
-        supabase.from('contacts').select('*', { count: 'exact', head: true })
+        (supabase.from('departments') as any).select('*', { count: 'exact', head: true }),
+        (supabase.from('portfolios') as any).select('*', { count: 'exact', head: true }),
+        (supabase.from('founders') as any).select('*', { count: 'exact', head: true }),
+        (supabase.from('articles') as any).select('*', { count: 'exact', head: true }),
+        (supabase.from('contacts') as any).select('*', { count: 'exact', head: true })
       ]);
 
       setCounts({

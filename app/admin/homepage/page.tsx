@@ -84,8 +84,7 @@ export default function HomepageManager() {
 
   async function fetchContent() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('site_content')
+    const { data, error } = await (supabase.from('site_content') as any)
       .select('*');
 
     if (error) {

@@ -25,18 +25,18 @@ export default function JoinUsManager() {
 
   async function fetchContent() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('join_us_config')
+    const { data, error } = await (supabase.from('join_us_config') as any)
       .select('*')
       .limit(1)
       .single();
 
     if (!error && data) {
+      const d = data as any;
       setContent({
-        title: data.title,
-        description: data.description,
-        perks: data.perks || [],
-        roles: data.open_roles || []
+        title: d.title,
+        description: d.description,
+        perks: d.perks || [],
+        roles: d.open_roles || []
       });
     }
     setLoading(false);
@@ -44,8 +44,7 @@ export default function JoinUsManager() {
 
   async function handleSave() {
     setSaving(true);
-    const { error } = await supabase
-      .from('join_us_config')
+    const { error } = await (supabase.from('join_us_config') as any)
       .upsert({
         id: 'default', // Using a fixed ID for single config
         title: content.title,

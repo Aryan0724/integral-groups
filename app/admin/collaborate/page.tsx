@@ -21,8 +21,7 @@ export default function CollaborateManager() {
 
   async function fetchContent() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('site_content')
+    const { data, error } = await (supabase.from('site_content') as any)
       .select('*')
       .or('key.ilike.collab.%');
 

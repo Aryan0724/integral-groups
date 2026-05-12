@@ -7,14 +7,13 @@ export function useContent(keys: string[], fallback: Record<string, string>) {
 
   useEffect(() => {
     async function fetchContent() {
-      const { data, error } = await supabase
-        .from('site_content')
+      const { data, error } = await (supabase.from('site_content') as any)
         .select('key, value')
         .in('key', keys);
 
       if (!error && data && data.length > 0) {
         const newContent = { ...fallback };
-        data.forEach(item => {
+        (data as any[]).forEach(item => {
           newContent[item.key] = item.value;
         });
         setContent(newContent);

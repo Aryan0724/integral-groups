@@ -23,8 +23,7 @@ export default function SettingsManager() {
 
   async function fetchContent() {
     setLoading(true);
-    const { data } = await supabase
-      .from('site_content')
+    const { data } = await (supabase.from('site_content') as any)
       .select('*')
       .or('key.ilike.site.%');
 

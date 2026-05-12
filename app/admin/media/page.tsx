@@ -31,8 +31,7 @@ export default function MediaManager() {
 
   async function fetchAssets() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('media_assets')
+    const { data, error } = await (supabase.from('media_assets') as any)
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -45,7 +44,7 @@ export default function MediaManager() {
   async function handleAdd() {
     if (!newAsset.name || !newAsset.url) return;
     setUploading(true);
-    const { error } = await supabase.from('media_assets').insert([newAsset]);
+    const { error } = await (supabase.from('media_assets') as any).insert([newAsset] as any);
     if (!error) {
       setNewAsset({ name: "", url: "", type: "image", size: "0 MB", dimensions: "N/A" });
       fetchAssets();
@@ -55,7 +54,7 @@ export default function MediaManager() {
 
   async function handleDelete(id: string) {
     if (confirm("Permanently purge this asset?")) {
-      await supabase.from('media_assets').delete().eq('id', id);
+      await (supabase.from('media_assets') as any).delete().eq('id', id);
       fetchAssets();
     }
   }

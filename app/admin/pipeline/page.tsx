@@ -30,8 +30,7 @@ export default function PipelineManager() {
 
   async function fetchContacts() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('contacts')
+    const { data, error } = await (supabase.from('contacts') as any)
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -42,9 +41,8 @@ export default function PipelineManager() {
   }
 
   async function updateStatus(id: string, status: string) {
-    const { error } = await supabase
-      .from('contacts')
-      .update({ status })
+    const { error } = await (supabase.from('contacts') as any)
+      .update({ status } as any)
       .eq('id', id);
     
     if (!error) fetchContacts();
@@ -52,7 +50,7 @@ export default function PipelineManager() {
 
   async function deleteContact(id: string) {
     if (confirm("Purge this dossier from the pipeline?")) {
-      await supabase.from('contacts').delete().eq('id', id);
+      await (supabase.from('contacts') as any).delete().eq('id', id);
       fetchContacts();
       setSelectedId(null);
     }

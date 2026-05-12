@@ -20,8 +20,7 @@ export default function DepartmentsAdmin() {
 
   async function fetchDepts() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('departments')
+    const { data, error } = await (supabase.from('departments') as any)
       .select('*')
       .order('name');
     
@@ -34,9 +33,8 @@ export default function DepartmentsAdmin() {
   async function handleSave() {
     if (!editingDept?.name) return;
 
-    const { error } = await supabase
-      .from('departments')
-      .upsert(editingDept);
+    const { error } = await (supabase.from('departments') as any)
+      .upsert(editingDept as any);
 
     if (!error) {
       setEditingDept(null);
