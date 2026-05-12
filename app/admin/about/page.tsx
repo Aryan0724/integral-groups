@@ -61,8 +61,7 @@ export default function AboutManager() {
       .filter(([key]) => key.startsWith('about.'))
       .map(([key, value]) => ({ key, value }));
 
-    const { error: contentError } = await supabase
-      .from('site_content')
+    const { error: contentError } = await (supabase.from('site_content') as any)
       .upsert(updates as any, { onConflict: 'key' });
 
     if (contentError) {

@@ -52,13 +52,11 @@ export default function IntelligenceManager() {
 
     let error;
     if (articleToSave.id) {
-      ({ error } = await supabase
-        .from('articles')
+      ({ error } = await (supabase.from('articles') as any)
         .update(articleToSave as any)
         .eq('id', articleToSave.id));
     } else {
-      ({ error } = await supabase
-        .from('articles')
+      ({ error } = await (supabase.from('articles') as any)
         .insert([articleToSave] as any));
     }
 

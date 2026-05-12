@@ -50,13 +50,11 @@ export default function PortfolioManager() {
 
     let error;
     if (itemToSave.id) {
-      ({ error } = await supabase
-        .from('portfolios')
+      ({ error } = await (supabase.from('portfolios') as any)
         .update(itemToSave as any)
         .eq('id', itemToSave.id));
     } else {
-      ({ error } = await supabase
-        .from('portfolios')
+      ({ error } = await (supabase.from('portfolios') as any)
         .insert([itemToSave] as any));
     }
 

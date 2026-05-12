@@ -39,7 +39,7 @@ export default function CollaborateManager() {
   async function handleSave() {
     setSaving(true);
     const updates = Object.entries(content).map(([key, value]) => ({ key, value }));
-    const { error } = await supabase.from('site_content').upsert(updates as any, { onConflict: 'key' });
+    const { error } = await (supabase.from('site_content') as any).upsert(updates as any, { onConflict: 'key' });
     
     if (!error) {
       setTimeout(() => setSaving(false), 500);

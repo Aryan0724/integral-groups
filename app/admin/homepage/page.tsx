@@ -124,8 +124,7 @@ export default function HomepageManager() {
       value
     }));
 
-    const { error } = await supabase
-      .from('site_content')
+    const { error } = await (supabase.from('site_content') as any)
       .upsert(updates as any, { onConflict: 'key' });
 
     if (error) {
