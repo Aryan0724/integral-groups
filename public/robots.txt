@@ -1,0 +1,11 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api
+
+# Host
+Host: https://integralgroups.in
+
+# Sitemaps
+Sitemap: https://integralgroups.in/sitemap.xml

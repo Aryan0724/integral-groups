@@ -127,7 +127,8 @@ export default function HomepageManager() {
       .upsert(updates as any, { onConflict: 'key' });
 
     if (error) {
-      setStatus({ type: 'error', message: "Failed to save changes. Check console." });
+      console.error("Supabase Save Error:", error);
+      setStatus({ type: 'error', message: `Failed to save: ${error.message}` });
     } else {
       setStatus({ type: 'success', message: "Changes saved successfully." });
       setTimeout(() => setStatus(null), 3000);

@@ -29,15 +29,57 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Integral Group | Engineering Intelligent Systems",
-  description: "Integral Group builds AI-driven infrastructure, intelligent automation systems, digital ecosystems, and future-ready technology platforms.",
-  keywords: ["AI automation", "intelligent infrastructure", "systems engineering", "robotics", "future technology"],
+  metadataBase: new URL('https://integralgroups.in'),
+  title: {
+    default: "Integral Group | AI Infrastructure & Intelligent Systems",
+    template: "%s | Integral Group"
+  },
+  description: "Integral Group builds AI-driven infrastructure, intelligent automation systems, research platforms, media ecosystems, and future-ready digital technologies.",
+  keywords: ["AI infrastructure", "automation systems", "intelligent workflows", "digital ecosystems", "systems engineering", "future technologies", "AI workflows", "automation infrastructure"],
   authors: [{ name: "Integral Group" }],
+  creator: "Integral Group",
+  publisher: "Integral Group",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
-    title: "Integral Group | Engineering Intelligent Systems",
-    description: "The Operating Interface of Integral Group.",
-    type: "website",
-    locale: "en_US",
+    title: "Integral Group | AI Infrastructure & Intelligent Systems",
+    description: "Integral Group builds AI-driven infrastructure, intelligent automation systems, research platforms, media ecosystems, and future-ready digital technologies.",
+    url: 'https://integralgroups.in',
+    siteName: 'Integral Group',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Integral Group Ecosystem',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Integral Group | AI Infrastructure & Intelligent Systems',
+    description: 'Integral Group builds AI-driven infrastructure, intelligent automation systems, and future-ready digital technologies.',
+    creator: '@integralgroups',
+    images: ['/twitter-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 };
 
@@ -66,6 +108,43 @@ export default function RootLayout({
             {children}
           </main>
         </SmoothScroll>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Integral Group",
+              "url": "https://integralgroups.in",
+              "logo": "https://integralgroups.in/logo.png",
+              "sameAs": [
+                "https://twitter.com/integralgroups",
+                "https://github.com/integral"
+              ],
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "telephone": "",
+                "contactType": "customer service"
+              }
+            })
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "Integral Group",
+              "url": "https://integralgroups.in",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://integralgroups.in/search?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
+            })
+          }}
+        />
       </body>
     </html>
 
