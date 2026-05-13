@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk, IBM_Plex_Mono, Geist } from "next/font/google";
+import Script from "next/script";
 import { SmoothScroll } from "@/components/shared/SmoothScroll";
 import "./globals.css";
 
@@ -101,6 +102,20 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable} ${geist.variable}`} suppressHydrationWarning>
       <body className="bg-white text-black font-sans antialiased selection:bg-primary/30" suppressHydrationWarning>
+        {/* Google Tag (gtag.js) */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-C3C85GFFXE"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-C3C85GFFXE');
+          `}
+        </Script>
         <div className="scanline-overlay opacity-5" />
         <Navigation />
         <SmoothScroll>
