@@ -82,6 +82,11 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  verification: {
+    other: {
+      "msvalidate.01": "8319811773A06094CB870997AF4B74B6",
+    },
+  },
 };
 
 export const viewport: Viewport = {
